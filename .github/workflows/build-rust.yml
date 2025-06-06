@@ -21,6 +21,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        path: ${{ github.workspace }}
 
     - name: Install Rust
-      run: curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+      run: sh ${{ github.workspace }}/scripts/rustup.sh -y

@@ -26,3 +26,13 @@ jobs:
 
     - name: Install Rust
       run: sh ${{ github.workspace }}/scripts/rustup.sh -y
+
+    - name: Build package
+      working-directory: ${{ github.workspace }}
+      run: cargo build --release
+
+    - name: Upload built package
+      uses: actions/upload-artifact@v4
+      with:
+        path: ${{ github.workspace }}/target
+        name: modern-robotics-rs

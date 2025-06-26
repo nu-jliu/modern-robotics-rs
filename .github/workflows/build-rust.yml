@@ -24,8 +24,7 @@ jobs:
       with:
         path: ${{ github.workspace }}/src
 
-    - name: Install Rust
-      run: sh ${{ github.workspace }}/src/scripts/rustup.sh -y
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
 
     - name: Build package
       working-directory: ${{ github.workspace }}/src

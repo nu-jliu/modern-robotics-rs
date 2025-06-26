@@ -31,6 +31,10 @@ jobs:
       working-directory: ${{ github.workspace }}/src
       run: cargo build --release
 
+    - name: Test
+      working-directory: ${{ github.workspace }}/src
+      run: cargo test
+
     - name: Upload built package
       uses: actions/upload-artifact@v4
       with:

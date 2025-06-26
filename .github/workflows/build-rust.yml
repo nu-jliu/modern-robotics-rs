@@ -22,17 +22,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        path: ${{ github.workspace }}
+        path: ${{ github.workspace }}/src
 
     - name: Install Rust
-      run: sh ${{ github.workspace }}/scripts/rustup.sh -y
+      run: sh ${{ github.workspace }}/src/scripts/rustup.sh -y
 
     - name: Build package
-      working-directory: ${{ github.workspace }}
+      working-directory: ${{ github.workspace }}/src
       run: cargo build --release
 
     - name: Upload built package
       uses: actions/upload-artifact@v4
       with:
-        path: ${{ github.workspace }}/target
+        path: ${{ github.workspace }}/src/target
         name: modern-robotics-rs

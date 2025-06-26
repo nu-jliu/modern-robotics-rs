@@ -1,11 +1,13 @@
 extern crate nalgebra;
 
+mod utils;
+
 pub mod modern_robotics {
     pub fn near_zero(x: f64) -> bool {
-        return x < 1e-6;
+        crate::utils::near_zero(x)
     }
-
-    pub fn normalize(v: nalgebra::Vector3<f64>) -> nalgebra::Vector3<f64> {
-        return v.normalize();
+    
+    pub fn normalize(v: nalgebra::DVector<f64>) -> nalgebra::DVector<f64> {
+        crate::utils::normalize(v)
     }
 }

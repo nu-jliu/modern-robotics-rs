@@ -1,7 +1,15 @@
 [package]
 name = "modern-robotics"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 
 [dependencies]
-nalgebra = "0.33.2" # replace * by the latest version of the crate.
+nalgebra = "0.33.2"
+
+[lib]
+name = "modern_robotics"
+path = "src/lib.rs"
+
+[[test]]
+name = "test_utils"
+path = "tests/test_utils.rs"

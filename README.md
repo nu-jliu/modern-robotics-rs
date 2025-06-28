@@ -69,16 +69,18 @@ Normalizes a vector to unit length.
 
 ```
 modern-robotics-rs/
+├── .github/
+│   └── workflows/
+│       └── build-rust.yml  # CI/CD workflow for automated builds and tests
 ├── src/
-│   ├── lib.rs          # Main library interface
-│   └── utils.rs        # Core utility functions
+│   ├── lib.rs              # Main library interface
+│   └── utils.rs            # Core utility functions
 ├── tests/
-│   └── test_utils.rs   # Comprehensive test suite
-├── scripts/
-│   └── rustup.sh       # Rust toolchain installation script
-├── Cargo.toml          # Package configuration
-├── Cargo.lock          # Dependency lock file
-└── README.md           # This file
+│   └── test_utils.rs       # Comprehensive test suite
+├── target/                 # Build artifacts (generated)
+├── Cargo.toml              # Package configuration
+├── Cargo.lock              # Dependency lock file
+└── README.md               # This file
 ```
 
 ## Testing
@@ -107,6 +109,17 @@ cargo test
 ## Constants
 
 - **`TOLERANCE`**: 1e-6 - The threshold used for near-zero comparisons
+
+## Continuous Integration
+
+The project uses GitHub Actions for automated building and testing. The workflow:
+
+- Triggers on pushes and pull requests to the `master` branch
+- Runs on Ubuntu 22.04
+- Sets up the Rust toolchain automatically
+- Builds the package in release mode
+- Runs all tests
+- Uploads build artifacts
 
 ## Development
 

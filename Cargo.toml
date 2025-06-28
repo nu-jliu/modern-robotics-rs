@@ -2,6 +2,7 @@
 name = "modern-robotics"
 version = "0.1.1"
 edition = "2024"
+readme = "README.md"
 
 [dependencies]
 nalgebra = "0.33.2"

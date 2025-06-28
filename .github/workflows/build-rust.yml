@@ -28,7 +28,7 @@ jobs:
 
     - name: Build package
       working-directory: ${{ github.workspace }}/src
-      run: cargo build --release --verbose
+      run: cargo build --release
 
     - name: Test
       working-directory: ${{ github.workspace }}/src

@@ -67,5 +67,5 @@ jobs:
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{github.workspace}}/doc/modern_robotics
+          publish_dir: ${{github.workspace}}/target/doc/modern_robotics
           force_orphan: true

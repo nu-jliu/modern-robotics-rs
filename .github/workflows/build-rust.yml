@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-test:
     runs-on: ubuntu-22.04
 
     steps:
@@ -34,21 +34,8 @@ jobs:
         path: ${{ github.workspace }}/src/target
         name: modern-robotics-rs
 
-  test:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          path: ${{ github.workspace }}/src
-
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-
-      - name: Test
-        working-directory: ${{ github.workspace }}/src
-        run: cargo test
-
   deploy:
+    needs: build-test
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4

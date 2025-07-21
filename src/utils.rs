@@ -1,4 +1,4 @@
-extern crate nalgebra;
+use nalgebra;
 
 const TOLERANCE: f64 = 1e-6;
 

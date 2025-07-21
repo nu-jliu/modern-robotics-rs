@@ -6,6 +6,7 @@ readme = "README.md"
 
 [dependencies]
 nalgebra = "0.33.2"
+assert_float_eq = "1.1.4"
 
 [lib]
 name = "modern_robotics"
@@ -14,3 +15,7 @@ path = "src/lib.rs"
 [[test]]
 name = "test_utils"
 path = "tests/test_utils.rs"
+
+[[test]]
+name = "test_rigid_body_motions"
+path = "tests/test_rigid_body_motions.rs"

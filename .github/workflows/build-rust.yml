@@ -53,12 +53,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: ${{ github.workspace }}/src
+          path: ${{ github.workspace }}
 
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Build package
-        working-directory: ${{ github.workspace }}/src
+        working-directory: ${{ github.workspace }}
         run: cargo doc
 
       - name: Deploy to GitHub Pages

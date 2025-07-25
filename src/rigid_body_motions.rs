@@ -46,17 +46,39 @@ pub fn matrix_log3(r: nalgebra::Matrix3<f64>) -> nalgebra::Matrix3<f64> {
         let omg;
         if !utils::near_zero(1.0 + r[(2, 2)]) {
             omg = (1.0 / (2.0 * (1.0 + r[(2, 2)]).sqrt()))
-                * nalgebra::Vector3::new(r[(0, 2)], r[(1, 2)], 1.0 + r[(2, 2)]);
+                * nalgebra::vector![r[(0, 2)], r[(1, 2)], 1.0 + r[(2, 2)]];
         } else if !utils::near_zero(1.0 + r[(1, 1)]) {
             omg = (1.0 / (2.0 * (1.0 + r[(1, 1)]).sqrt()))
-                * nalgebra::Vector3::new(r[(0, 1)], 1.0 + r[(1, 1)], r[(2, 1)]);
+                * nalgebra::vector![r[(0, 1)], 1.0 + r[(1, 1)], r[(2, 1)]];
         } else {
             omg = (1.0 / (2.0 * (1.0 + r[(0, 0)]).sqrt()))
-                * nalgebra::Vector3::new(1.0 + r[(0, 0)], r[(1, 2)], r[(2, 2)]);
+                * nalgebra::vector![1.0 + r[(0, 0)], r[(1, 2)], r[(2, 2)]];
         }
         vec_to_so3(omg)
     } else {
         let theta = acosinput.acos();
         theta / 2.0 / theta.sin() * (r - r.transpose())
     }
+}
+
+pub fn rp_to_trans(r: nalgebra::Matrix3<f64>, p: nalgebra::Vector3<f64>) -> nalgebra::Matrix4<f64> {
+    let bottom = nalgebra::matrix![0.0, 0.0, 0.0];
+    let one = nalgebra::vector![1.0];
+    nalgebra::stack![r, p; bottom, one]
+}
+
+pub fn trans_to_rp(t: nalgebra::Matrix4<f64>) -> (nalgebra::Matrix3<f64>, nalgebra::Vector3<f64>) {
+    let r = nalgebra::Matrix3::new(
+        t[(0, 0)],
+        t[(0, 1)],
+        t[(0, 2)],
+        t[(1, 0)],
+        t[(1, 1)],
+        t[(1, 2)],
+        t[(2, 0)],
+        t[(2, 1)],
+        t[(2, 2)],
+    );
+    let p = nalgebra::Vector3::new(t[(0, 3)], t[(1, 3)], t[(2, 3)]);
+    (r, p)
 }

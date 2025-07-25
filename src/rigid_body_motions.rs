@@ -37,3 +37,26 @@ pub fn matrix_exp3(so3mat: nalgebra::Matrix3<f64>) -> nalgebra::Matrix3<f64> {
         nalgebra::Matrix3::identity() + theta.sin() * omgmat + (1.0 - theta.cos()) * omgmat * omgmat
     }
 }
+
+pub fn matrix_log3(r: nalgebra::Matrix3<f64>) -> nalgebra::Matrix3<f64> {
+    let acosinput = (r.trace() - 1.0) / 2.0;
+    if acosinput >= 1.0 {
+        nalgebra::Matrix3::zeros()
+    } else if acosinput <= -1.0 {
+        let omg;
+        if !utils::near_zero(1.0 + r[(2, 2)]) {
+            omg = (1.0 / (2.0 * (1.0 + r[(2, 2)]).sqrt()))
+                * nalgebra::Vector3::new(r[(0, 2)], r[(1, 2)], 1.0 + r[(2, 2)]);
+        } else if !utils::near_zero(1.0 + r[(1, 1)]) {
+            omg = (1.0 / (2.0 * (1.0 + r[(1, 1)]).sqrt()))
+                * nalgebra::Vector3::new(r[(0, 1)], 1.0 + r[(1, 1)], r[(2, 1)]);
+        } else {
+            omg = (1.0 / (2.0 * (1.0 + r[(0, 0)]).sqrt()))
+                * nalgebra::Vector3::new(1.0 + r[(0, 0)], r[(1, 2)], r[(2, 2)]);
+        }
+        vec_to_so3(omg)
+    } else {
+        let theta = acosinput.acos();
+        theta / 2.0 / theta.sin() * (r - r.transpose())
+    }
+}

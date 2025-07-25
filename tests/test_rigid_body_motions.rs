@@ -73,3 +73,19 @@ fn test_matrix_exp3() {
     assert_float_absolute_eq!(r[(2, 1)], 0.6313497, TOLERANCE);
     assert_float_absolute_eq!(r[(2, 2)], 0.34810748, TOLERANCE);
 }
+
+#[test]
+fn test_matrix_log3() {
+    let r = nalgebra::Matrix3::new(0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    let so3mat = rigid_body_motions::matrix_log3(r);
+
+    assert_float_absolute_eq!(so3mat[(0, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(so3mat[(0, 1)], -1.20919958, TOLERANCE);
+    assert_float_absolute_eq!(so3mat[(0, 2)], 1.20919958, TOLERANCE);
+    assert_float_absolute_eq!(so3mat[(1, 0)], 1.20919958, TOLERANCE);
+    assert_float_absolute_eq!(so3mat[(1, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(so3mat[(1, 2)], -1.20919958, TOLERANCE);
+    assert_float_absolute_eq!(so3mat[(2, 0)], -1.20919958, TOLERANCE);
+    assert_float_absolute_eq!(so3mat[(2, 1)], 1.20919958, TOLERANCE);
+    assert_float_absolute_eq!(so3mat[(2, 2)], 0.0, TOLERANCE);
+}

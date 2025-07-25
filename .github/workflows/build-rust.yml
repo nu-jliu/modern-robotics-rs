@@ -46,7 +46,7 @@ jobs:
 
       - name: Build package
         working-directory: ${{ github.workspace }}
-        run: cargo doc
+        run: cargo doc ----document-private-items
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -54,5 +54,5 @@ jobs:
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{github.workspace}}/target/doc/modern_robotics
+          publish_dir: ${{github.workspace}}/target/doc
           force_orphan: true

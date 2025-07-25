@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["axis_ang3","matrix_exp3","matrix_log3","rot_inv","rp_to_trans","so3_to_vec","trans_to_rp","vec_to_so3"]};

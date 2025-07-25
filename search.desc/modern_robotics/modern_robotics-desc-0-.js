@@ -1,0 +1,1 @@
+searchState.loadedDescShard("modern_robotics", 0, "Determines whether a scalar is small enough to be treated …\nNormalizes a vector\nDetermines whether a scalar is small enough to be treated …\nNormalizes a vector")

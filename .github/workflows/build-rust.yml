@@ -46,7 +46,7 @@ jobs:
 
       - name: Build package
         working-directory: ${{ github.workspace }}
-        run: cargo doc ----document-private-items
+        run: cargo doc --document-private-items
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

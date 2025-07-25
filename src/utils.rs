@@ -37,9 +37,9 @@ pub fn near_zero(z: f64) -> bool {
 ///
 /// ```
 /// use crate::modern_robotics;
-/// use crate::nalgebra;
+/// use nalgebra;
 ///
-/// let v = nalgebra::Vector3::new(1.0, 2.0, 3.0);
+/// let v = nalgebra::DVector::from_vec(vec![1.0, 2.0, 3.0]);
 /// let _ = modern_robotics::normalize(v);
 /// ```
 pub fn normalize(v: nalgebra::DVector<f64>) -> nalgebra::DVector<f64> {

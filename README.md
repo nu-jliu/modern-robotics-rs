@@ -17,6 +17,8 @@ This library provides essential mathematical utilities commonly used in robotics
 - **Skew-Symmetric Operations**: Convert between 3D/6D vectors and skew-symmetric matrices (so(3)/se(3))
 - **Axis-Angle Representations**: Convert between exponential coordinates and axis-angle form for both SO(3) and SE(3)
 - **Screw Theory**: Screw axis representations for robotic joint motions
+- **Forward Kinematics**: Body frame and space frame forward kinematics calculations
+- **Velocity Kinematics**: Jacobian calculations for both body and space frames
 - **Numerical Tolerance Checking**: Check if values are near zero within a specified tolerance
 - **Vector Normalization**: Normalize vectors to unit length using nalgebra's DVector
 - **Robust Testing**: Comprehensive test suite covering all mathematical operations
@@ -38,7 +40,7 @@ modern-robotics = "0.1.1"
 ## Usage
 
 ```rust
-use modern_robotics::{utils::{near_zero, normalize}, rigid_body_motions::*};
+use modern_robotics::*;
 use nalgebra::{DVector, Vector3, Vector6, Matrix3, Matrix4};
 
 // Check if a value is near zero
@@ -98,6 +100,19 @@ let screw_axis = screw_to_axis(q, s, h);
 
 // SE(3) axis-angle representation
 let (screw_axis_unit, theta) = axis_ang6(twist);
+
+// Forward kinematics
+let m = Matrix4::identity(); // End-effector configuration at zero position
+let blist = vec![Vector6::new(0.0, 0.0, 1.0, 0.0, 0.0, 0.0)]; // Body screw axes
+let thetalist = vec![1.57]; // Joint angles in radians
+let t_body = fkin_body(m, blist.clone(), thetalist.clone());
+
+let slist = vec![Vector6::new(0.0, 0.0, 1.0, 0.0, 0.0, 0.0)]; // Space screw axes
+let t_space = fkin_space(m, slist.clone(), thetalist.clone());
+
+// Jacobian calculations
+let jb = jacobian_body(blist, thetalist.clone());
+let js = jacobian_space(slist, thetalist);
 ```
 
 ## API Reference
@@ -254,24 +269,65 @@ Computes the matrix logarithm for SE(3), the inverse of matrix exponential.
 - **Returns**: The corresponding 4×4 se(3) matrix representation
 - **Location**: `src/rigid_body_motions.rs:168`
 
+### Forward Kinematics (`forward_kinematics` module)
+
+#### `fkin_body(m: Matrix4<f64>, blist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix4<f64>`
+
+Computes forward kinematics using the body frame representation.
+
+- **Parameters**: `m` - End-effector configuration at zero position, `blist` - Body screw axes, `thetalist` - Joint angles
+- **Returns**: The end-effector configuration
+- **Location**: `src/forward_kinematics.rs:5`
+
+#### `fkin_space(m: Matrix4<f64>, slist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix4<f64>`
+
+Computes forward kinematics using the space frame representation.
+
+- **Parameters**: `m` - End-effector configuration at zero position, `slist` - Space screw axes, `thetalist` - Joint angles
+- **Returns**: The end-effector configuration
+- **Location**: `src/forward_kinematics.rs:23`
+
+### Velocity Kinematics (`velocity_kinematics_and_statics` module)
+
+#### `jacobian_body(blist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix6xX<f64>`
+
+Computes the body Jacobian matrix.
+
+- **Parameters**: `blist` - Body screw axes, `thetalist` - Joint angles
+- **Returns**: The 6×n body Jacobian matrix
+- **Location**: `src/velocity_kinematics_and_statics.rs:5`
+
+#### `jacobian_space(slist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix6xX<f64>`
+
+Computes the space Jacobian matrix.
+
+- **Parameters**: `slist` - Space screw axes, `thetalist` - Joint angles
+- **Returns**: The 6×n space Jacobian matrix
+- **Location**: `src/velocity_kinematics_and_statics.rs:33`
+
 ## Project Structure
 
 ```
 modern-robotics-rs/
 ├── .github/
 │   └── workflows/
-│       └── build-rust.yml           # CI/CD workflow for automated builds and tests
+│       └── build-rust.yml                        # CI/CD workflow for automated builds and tests
 ├── src/
-│   ├── lib.rs                       # Main library interface
-│   ├── utils.rs                     # Core utility functions
-│   └── rigid_body_motions.rs        # SO(3) operations and rigid body motions
+│   ├── lib.rs                                     # Main library interface
+│   ├── utils.rs                                   # Core utility functions
+│   ├── rigid_body_motions.rs                      # SO(3) and SE(3) operations
+│   ├── forward_kinematics.rs                      # Forward kinematics calculations
+│   └── velocity_kinematics_and_statics.rs         # Jacobian and velocity kinematics
 ├── tests/
-│   ├── test_utils.rs                # Tests for utility functions
-│   └── test_rigid_body_motions.rs   # Tests for rigid body motion functions
-├── target/                          # Build artifacts (generated)
-├── Cargo.toml                       # Package configuration
-├── Cargo.lock                       # Dependency lock file
-└── README.md                        # This file
+│   ├── test_utils.rs                              # Tests for utility functions
+│   ├── test_rigid_body_motions.rs                 # Tests for rigid body motion functions
+│   ├── test_forward_kinematics.rs                 # Tests for forward kinematics
+│   └── test_velocity_kinematics_and_statics.rs    # Tests for velocity kinematics
+├── target/                                        # Build artifacts (generated)
+├── Cargo.toml                                     # Package configuration
+├── Cargo.lock                                     # Dependency lock file
+├── CLAUDE.md                                      # Claude Code guidance
+└── README.md                                      # This file
 ```
 
 ## Testing
@@ -284,6 +340,8 @@ The project includes comprehensive tests covering:
 - SE(3) operations: transformations, inversions, adjoint representations
 - Skew-symmetric matrix conversions for both so(3) and se(3)
 - Screw theory operations
+- Forward kinematics for both body and space frames
+- Jacobian calculations for velocity kinematics
 - Numerical precision and edge cases
 
 Run tests with:
@@ -315,6 +373,14 @@ cargo test
 - **`test_axis_ang6`**: Tests conversion to axis-angle representation for SE(3)
 - **`test_matrix_exp6`**: Tests matrix exponential for SE(3) transformations
 - **`test_matrix_log6`**: Tests matrix logarithm for SE(3), inverse of matrix exponential
+
+#### Forward Kinematics Tests (`test_forward_kinematics.rs`)
+- **`test_fkin_body`**: Tests body frame forward kinematics calculations
+- **`test_fkin_space`**: Tests space frame forward kinematics calculations
+
+#### Velocity Kinematics Tests (`test_velocity_kinematics_and_statics.rs`)
+- **`test_jacobian_body`**: Tests body Jacobian matrix computation
+- **`test_jacobian_space`**: Tests space Jacobian matrix computation
 
 ## Constants
 

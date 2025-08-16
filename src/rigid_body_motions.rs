@@ -1,6 +1,29 @@
 use crate::{near_zero, normalize};
 use nalgebra;
 
+/// Inverts a rotation matrix.
+///
+/// # Arguments
+///
+/// - `r` (`nalgebra`) - A rotation matrix
+///
+/// # Returns
+///
+/// - `nalgebra::Matrix3<f64>` - The inverse of r
+///
+/// # Examples
+///
+/// ```
+/// use nalgebra;
+/// use crate::rot_inv;
+///
+/// let r = nalgebra::matrix![
+///     0.0, 0.0, 1.0;
+///     1.0, 0.0, 0.0,
+///     0.0, 1.0, 0.0
+/// ];
+/// let r_inv = rot_inv();
+/// ```
 pub fn rot_inv(r: nalgebra::Matrix3<f64>) -> nalgebra::Matrix3<f64> {
     r.transpose()
 }

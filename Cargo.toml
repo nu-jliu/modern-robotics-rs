@@ -1,12 +1,12 @@
 [package]
-name = "modern-robotics"
-version = "0.1.1"
 edition = "2024"
+name = "modern-robotics"
 readme = "README.md"
+version = "0.1.1"
 
 [dependencies]
-nalgebra = "0.33.2"
 assert_float_eq = "1.1.4"
+nalgebra = "0.33.2"
 
 [lib]
 name = "modern_robotics"
@@ -19,3 +19,7 @@ path = "tests/test_utils.rs"
 [[test]]
 name = "test_rigid_body_motions"
 path = "tests/test_rigid_body_motions.rs"
+
+[[test]]
+name = "test_forward_kinematics"
+path = "tests/test_forward_kinematics.rs"

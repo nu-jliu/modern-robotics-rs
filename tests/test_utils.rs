@@ -15,7 +15,7 @@ fn test_near_zero() {
 #[test]
 fn test_normalize() {
     let v = nalgebra::DVector::from_vec(vec![1.0, 2.0, 3.0]);
-    let norm_v = modern_robotics::normalize(v);
+    let norm_v = modern_robotics::normalize(&v);
 
     assert_float_eq::assert_float_absolute_eq!(norm_v[0], 1.0 / 14.0_f64.sqrt(), TOLERANCE);
     assert_float_eq::assert_float_absolute_eq!(norm_v[1], 2.0 / 14.0_f64.sqrt(), TOLERANCE);

@@ -8,7 +8,7 @@ A comprehensive Rust implementation of fundamental robotics algorithms and utili
 
 ## Overview
 
-This library provides essential mathematical utilities commonly used in robotics applications, with a focus on rigid body motions, SO(3) and SE(3) operations, and numerical computations. The implementation leverages the `nalgebra` linear algebra library for efficient mathematical operations and follows modern robotics theory.
+This library provides essential mathematical utilities commonly used in robotics applications, with a focus on rigid body motions, SO(3) and SE(3) operations, forward and inverse kinematics, and numerical computations. The implementation leverages the `nalgebra` linear algebra library for efficient mathematical operations and follows modern robotics theory.
 
 ## Features
 
@@ -18,6 +18,7 @@ This library provides essential mathematical utilities commonly used in robotics
 - **Axis-Angle Representations**: Convert between exponential coordinates and axis-angle form for both SO(3) and SE(3)
 - **Screw Theory**: Screw axis representations for robotic joint motions
 - **Forward Kinematics**: Body frame and space frame forward kinematics calculations
+- **Inverse Kinematics**: Newton-Raphson method for body and space frame inverse kinematics
 - **Velocity Kinematics**: Jacobian calculations for both body and space frames
 - **Numerical Tolerance Checking**: Check if values are near zero within a specified tolerance
 - **Vector Normalization**: Normalize vectors to unit length using nalgebra's DVector
@@ -112,7 +113,17 @@ let t_space = fkin_space(m, slist.clone(), thetalist.clone());
 
 // Jacobian calculations
 let jb = jacobian_body(blist, thetalist.clone());
-let js = jacobian_space(slist, thetalist);
+let js = jacobian_space(slist, thetalist.clone());
+
+// Inverse kinematics
+use nalgebra::DVector;
+let thetalist0 = DVector::from_vec(vec![0.0; slist.len()]); // Initial guess
+let emog = 0.01; // Angular error tolerance
+let ev = 0.01; // Linear error tolerance
+let target_pose = Matrix4::identity(); // Target end-effector pose
+
+let (theta_body, success_body) = ikin_body(&blist, &m, &target_pose, &thetalist0, emog, ev);
+let (theta_space, success_space) = ikin_space(&slist, &m, &target_pose, &thetalist0, emog, ev);
 ```
 
 ## API Reference
@@ -287,6 +298,24 @@ Computes forward kinematics using the space frame representation.
 - **Returns**: The end-effector configuration
 - **Location**: `src/forward_kinematics.rs:23`
 
+### Inverse Kinematics (`inverse_kinematics` module)
+
+#### `ikin_body(blist: &Vec<Vector6<f64>>, m: &Matrix4<f64>, t: &Matrix4<f64>, thetalist0: &DVector<f64>, emog: f64, ev: f64) -> (DVector<f64>, bool)`
+
+Computes inverse kinematics using the body frame representation with Newton-Raphson method.
+
+- **Parameters**: `blist` - Body screw axes, `m` - End-effector at zero position, `t` - Target pose, `thetalist0` - Initial joint angle guess, `emog` - Angular error tolerance, `ev` - Linear error tolerance
+- **Returns**: Tuple of (joint angles, convergence success flag)
+- **Location**: `src/inverse_kinematics.rs:8`
+
+#### `ikin_space(slist: &Vec<Vector6<f64>>, m: &Matrix4<f64>, t: &Matrix4<f64>, thetalist0: &DVector<f64>, emog: f64, ev: f64) -> (DVector<f64>, bool)`
+
+Computes inverse kinematics using the space frame representation with Newton-Raphson method.
+
+- **Parameters**: `slist` - Space screw axes, `m` - End-effector at zero position, `t` - Target pose, `thetalist0` - Initial joint angle guess, `emog` - Angular error tolerance, `ev` - Linear error tolerance
+- **Returns**: Tuple of (joint angles, convergence success flag)
+- **Location**: `src/inverse_kinematics.rs:48`
+
 ### Velocity Kinematics (`velocity_kinematics_and_statics` module)
 
 #### `jacobian_body(blist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix6xX<f64>`
@@ -317,11 +346,13 @@ modern-robotics-rs/
 │   ├── utils.rs                                   # Core utility functions
 │   ├── rigid_body_motions.rs                      # SO(3) and SE(3) operations
 │   ├── forward_kinematics.rs                      # Forward kinematics calculations
+│   ├── inverse_kinematics.rs                      # Inverse kinematics calculations
 │   └── velocity_kinematics_and_statics.rs         # Jacobian and velocity kinematics
 ├── tests/
 │   ├── test_utils.rs                              # Tests for utility functions
 │   ├── test_rigid_body_motions.rs                 # Tests for rigid body motion functions
 │   ├── test_forward_kinematics.rs                 # Tests for forward kinematics
+│   ├── test_inverse_kinematics.rs                 # Tests for inverse kinematics
 │   └── test_velocity_kinematics_and_statics.rs    # Tests for velocity kinematics
 ├── target/                                        # Build artifacts (generated)
 ├── Cargo.toml                                     # Package configuration
@@ -341,6 +372,7 @@ The project includes comprehensive tests covering:
 - Skew-symmetric matrix conversions for both so(3) and se(3)
 - Screw theory operations
 - Forward kinematics for both body and space frames
+- Inverse kinematics using Newton-Raphson method
 - Jacobian calculations for velocity kinematics
 - Numerical precision and edge cases
 
@@ -377,6 +409,10 @@ cargo test
 #### Forward Kinematics Tests (`test_forward_kinematics.rs`)
 - **`test_fkin_body`**: Tests body frame forward kinematics calculations
 - **`test_fkin_space`**: Tests space frame forward kinematics calculations
+
+#### Inverse Kinematics Tests (`test_inverse_kinematics.rs`)
+- **`test_ikin_body`**: Tests body frame inverse kinematics using Newton-Raphson method
+- **`test_ikin_space`**: Tests space frame inverse kinematics using Newton-Raphson method
 
 #### Velocity Kinematics Tests (`test_velocity_kinematics_and_statics.rs`)
 - **`test_jacobian_body`**: Tests body Jacobian matrix computation
@@ -435,10 +471,10 @@ This library serves as a foundation for robotics applications in Rust. Contribut
 
 Potential areas for expansion include:
 - Quaternion operations and conversions
-- Forward and inverse kinematics for robot manipulators
-- Jacobian calculations for velocity kinematics
 - Dynamics and trajectory planning algorithms
 - Additional Lie group operations
 - Path planning utilities
 - Support for different robot configurations
 - Integration with robot simulation frameworks
+- Optimization-based inverse kinematics solvers
+- Robot dynamics and control algorithms

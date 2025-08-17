@@ -7,7 +7,7 @@ const TOLERANCE: f64 = 1e-6;
 #[test]
 fn test_rot_inv() {
     let r = nalgebra::Matrix3::new(0., 0., 1., 1., 0., 0., 0., 1., 0.);
-    let r_inv = modern_robotics::rot_inv(r);
+    let r_inv = modern_robotics::rot_inv(&r);
 
     assert_eq!(r_inv[(0, 0)], 0.);
     assert_eq!(r_inv[(0, 1)], 1.);
@@ -23,7 +23,7 @@ fn test_rot_inv() {
 #[test]
 fn test_vec_to_so3() {
     let omg = nalgebra::Vector3::new(1., 2., 3.);
-    let so3mat = modern_robotics::vec_to_so3(omg);
+    let so3mat = modern_robotics::vec_to_so3(&omg);
 
     assert_eq!(so3mat[(0, 0)], 0.);
     assert_eq!(so3mat[(0, 1)], -3.);
@@ -39,7 +39,7 @@ fn test_vec_to_so3() {
 #[test]
 fn test_so3_to_vec() {
     let so3mat = nalgebra::Matrix3::new(0., -3., 2., 3., 0., -1., -2., 1., 0.);
-    let omg = modern_robotics::so3_to_vec(so3mat);
+    let omg = modern_robotics::so3_to_vec(&so3mat);
 
     assert_eq!(omg[0], 1.);
     assert_eq!(omg[1], 2.);
@@ -49,7 +49,7 @@ fn test_so3_to_vec() {
 #[test]
 fn test_axis_ang3() {
     let expc3 = nalgebra::Vector3::new(1., 2., 3.);
-    let (omghat, theta) = modern_robotics::axis_ang3(expc3);
+    let (omghat, theta) = modern_robotics::axis_ang3(&expc3);
 
     assert_float_absolute_eq!(omghat[0], 0.26726124, TOLERANCE);
     assert_float_absolute_eq!(omghat[1], 0.53452248, TOLERANCE);
@@ -61,7 +61,7 @@ fn test_axis_ang3() {
 #[test]
 fn test_matrix_exp3() {
     let so3mat = nalgebra::Matrix3::new(0., -3., 2., 3., 0., -1., -2., 1., 0.);
-    let r = modern_robotics::matrix_exp3(so3mat);
+    let r = modern_robotics::matrix_exp3(&so3mat);
 
     assert_float_absolute_eq!(r[(0, 0)], -0.69492056, TOLERANCE);
     assert_float_absolute_eq!(r[(0, 1)], 0.71352099, TOLERANCE);
@@ -77,7 +77,7 @@ fn test_matrix_exp3() {
 #[test]
 fn test_matrix_log3() {
     let r = nalgebra::Matrix3::new(0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-    let so3mat = modern_robotics::matrix_log3(r);
+    let so3mat = modern_robotics::matrix_log3(&r);
 
     assert_float_absolute_eq!(so3mat[(0, 0)], 0.0, TOLERANCE);
     assert_float_absolute_eq!(so3mat[(0, 1)], -1.20919958, TOLERANCE);
@@ -95,7 +95,7 @@ fn test_matrix_log3() {
 fn test_rp_to_trans() {
     let r = nalgebra::Matrix3::new(1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0);
     let p = nalgebra::Vector3::new(1.0, 2.0, 5.0);
-    let t = modern_robotics::rp_to_trans(r, p);
+    let t = modern_robotics::rp_to_trans(&r, &p);
 
     assert_float_absolute_eq!(t[(0, 0)], 1.0, TOLERANCE);
     assert_float_absolute_eq!(t[(0, 1)], 0.0, TOLERANCE);
@@ -120,7 +120,7 @@ fn test_trans_to_rp() {
     let t = nalgebra::Matrix4::new(
         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0, 0.0, 1.0,
     );
-    let (r, p) = modern_robotics::trans_to_rp(t);
+    let (r, p) = modern_robotics::trans_to_rp(&t);
 
     assert_float_absolute_eq!(r[(0, 0)], 1.0, TOLERANCE);
     assert_float_absolute_eq!(r[(0, 1)], 0.0, TOLERANCE);
@@ -142,7 +142,7 @@ fn test_trans_inv() {
     let t = nalgebra::Matrix4::new(
         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0, 0.0, 1.0,
     );
-    let t_inv = modern_robotics::trans_inv(t);
+    let t_inv = modern_robotics::trans_inv(&t);
 
     assert_float_absolute_eq!(t_inv[(0, 0)], 1.0, TOLERANCE);
     assert_float_absolute_eq!(t_inv[(0, 1)], 0.0, TOLERANCE);
@@ -165,7 +165,7 @@ fn test_trans_inv() {
 #[test]
 fn test_vec_to_se3() {
     let v = nalgebra::Vector6::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
-    let se3mat = modern_robotics::vec_to_se3(v);
+    let se3mat = modern_robotics::vec_to_se3(&v);
 
     assert_float_absolute_eq!(se3mat[(0, 0)], 0.0, TOLERANCE);
     assert_float_absolute_eq!(se3mat[(0, 1)], -3.0, TOLERANCE);
@@ -190,7 +190,7 @@ fn test_se3_to_vec() {
     let se3mat = nalgebra::Matrix4::new(
         0.0, -3.0, 2.0, 4.0, 3.0, 0.0, -1.0, 5.0, -2.0, 1.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0,
     );
-    let v = modern_robotics::se3_to_vec(se3mat);
+    let v = modern_robotics::se3_to_vec(&se3mat);
 
     assert_float_absolute_eq!(v[0], 1.0, TOLERANCE);
     assert_float_absolute_eq!(v[1], 2.0, TOLERANCE);
@@ -205,7 +205,7 @@ fn test_adjoint() {
     let t = nalgebra::Matrix4::new(
         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0, 0.0, 1.0,
     );
-    let ad_t = modern_robotics::adjoint(t);
+    let ad_t = modern_robotics::adjoint(&t);
 
     assert_float_absolute_eq!(ad_t[(0, 0)], 1.0, TOLERANCE);
     assert_float_absolute_eq!(ad_t[(0, 1)], 0.0, TOLERANCE);
@@ -250,7 +250,7 @@ fn test_screw_to_axis() {
     let q = nalgebra::Vector3::new(3.0, 0.0, 0.0);
     let s = nalgebra::Vector3::new(0.0, 0.0, 1.0);
     let h = 2.0;
-    let v = modern_robotics::screw_to_axis(q, s, h);
+    let v = modern_robotics::screw_to_axis(&q, &s, h);
 
     assert_float_absolute_eq!(v[0], 0.0, TOLERANCE);
     assert_float_absolute_eq!(v[1], 0.0, TOLERANCE);
@@ -263,7 +263,7 @@ fn test_screw_to_axis() {
 #[test]
 fn test_axis_ang6() {
     let expc6 = nalgebra::Vector6::new(1.0, 0.0, 0.0, 1.0, 2.0, 3.0);
-    let (s, theta) = modern_robotics::axis_ang6(expc6);
+    let (s, theta) = modern_robotics::axis_ang6(&expc6);
 
     assert_float_absolute_eq!(s[0], 1.0, TOLERANCE);
     assert_float_absolute_eq!(s[1], 0.0, TOLERANCE);
@@ -320,7 +320,7 @@ fn test_matrix_log6() {
     let t = nalgebra::Matrix4::new(
         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0, 0.0, 1.0,
     );
-    let se3mat = modern_robotics::matrix_log6(t);
+    let se3mat = modern_robotics::matrix_log6(&t);
 
     assert_float_absolute_eq!(se3mat[(0, 0)], 0.0, TOLERANCE);
     assert_float_absolute_eq!(se3mat[(0, 1)], 0.0, TOLERANCE);

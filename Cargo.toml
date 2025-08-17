@@ -23,3 +23,7 @@ path = "tests/test_rigid_body_motions.rs"
 [[test]]
 name = "test_forward_kinematics"
 path = "tests/test_forward_kinematics.rs"
+
+[[test]]
+name = "test_inverse_kinematics"
+path = "tests/test_inverse_kinematics.rs"

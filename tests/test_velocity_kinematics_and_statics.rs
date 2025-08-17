@@ -12,9 +12,9 @@ fn test_jacobian_body() {
         nalgebra::Vector6::new(0.0, 1.0, 0.0, 0.0, 2.0, 1.0),
         nalgebra::Vector6::new(1.0, 0.0, 0.0, 0.2, 0.3, 0.4),
     ];
-    let thetalist = vec![0.2, 1.1, 0.1, 1.2];
+    let thetalist = nalgebra::dvector![0.2, 1.1, 0.1, 1.2];
 
-    let jb = modern_robotics::jacobian_body(blist, thetalist);
+    let jb = modern_robotics::jacobian_body(&blist, &thetalist);
 
     assert_float_absolute_eq!(jb[(0, 0)], -0.04528405, TOLERANCE);
     assert_float_absolute_eq!(jb[(1, 0)], 0.74359313, TOLERANCE);
@@ -50,9 +50,9 @@ fn test_jacobian_space() {
         nalgebra::Vector6::new(0.0, 1.0, 0.0, 0.0, 2.0, 1.0),
         nalgebra::Vector6::new(1.0, 0.0, 0.0, 0.2, 0.3, 0.4),
     ];
-    let thetalist = vec![0.2, 1.1, 0.1, 1.2];
+    let thetalist = nalgebra::dvector![0.2, 1.1, 0.1, 1.2];
 
-    let js = modern_robotics::jacobian_space(slist, thetalist);
+    let js = modern_robotics::jacobian_space(&slist, &thetalist);
     println!("{js}");
 
     assert_float_absolute_eq!(js[(0, 0)], 0.0, TOLERANCE);

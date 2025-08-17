@@ -3,8 +3,8 @@ use nalgebra;
 use crate::{adjoint, matrix_exp6, vec_to_se3};
 
 pub fn jacobian_body(
-    blist: Vec<nalgebra::Vector6<f64>>,
-    thetalist: Vec<f64>,
+    blist: &Vec<nalgebra::Vector6<f64>>,
+    thetalist: &nalgebra::DVector<f64>,
 ) -> nalgebra::Matrix6xX<f64> {
     let n = blist.len();
     let mut jb: nalgebra::Matrix6xX<f64> = nalgebra::Matrix6xX::zeros(n);
@@ -18,11 +18,12 @@ pub fn jacobian_body(
         let bvec = blist[i + 1];
         let theta = thetalist[i + 1];
 
-        let se3mat = vec_to_se3(-bvec * theta);
+        let v = -bvec * theta;
+        let se3mat = vec_to_se3(&v);
         let tij = matrix_exp6(se3mat);
         t = t * tij;
 
-        let adt = adjoint(t);
+        let adt = adjoint(&t);
         let jbvec = adt * blist[i];
         jb.set_column(i, &jbvec);
     }
@@ -31,8 +32,8 @@ pub fn jacobian_body(
 }
 
 pub fn jacobian_space(
-    slist: Vec<nalgebra::Vector6<f64>>,
-    thetalist: Vec<f64>,
+    slist: &Vec<nalgebra::Vector6<f64>>,
+    thetalist: &nalgebra::DVector<f64>,
 ) -> nalgebra::Matrix6xX<f64> {
     let n = slist.len();
     let mut js: nalgebra::Matrix6xX<f64> = nalgebra::Matrix6xX::zeros(n);
@@ -44,11 +45,12 @@ pub fn jacobian_space(
     for i in 1..n {
         let svec = slist[i - 1];
         let theta = thetalist[i - 1];
-        let se3mat = vec_to_se3(svec * theta);
+        let v = svec * theta;
+        let se3mat = vec_to_se3(&v);
         let tij = matrix_exp6(se3mat);
         t = t * tij;
 
-        let adt = adjoint(t);
+        let adt = adjoint(&t);
         let jsvec = adt * slist[i];
         js.set_column(i, &jsvec);
     }

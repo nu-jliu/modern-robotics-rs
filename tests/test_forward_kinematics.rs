@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use assert_float_eq::assert_float_absolute_eq;
-use modern_robotics::{self, fkin_space};
+use modern_robotics::fkin_space;
 use nalgebra;
 
 const TOLERANCE: f64 = 1e-6;
@@ -16,9 +16,9 @@ fn test_fkin_body() {
         nalgebra::Vector6::new(0.0, 0.0, 0.0, 0.0, 1.0, 0.0),
         nalgebra::Vector6::new(0.0, 0.0, 1.0, 0.0, 0.0, 0.1),
     ];
-    let thetalist: Vec<f64> = vec![PI / 2.0, 3.0, PI];
+    let thetalist = nalgebra::dvector![PI / 2.0, 3.0, PI];
 
-    let t = modern_robotics::fkin_body(m, blist, thetalist);
+    let t = modern_robotics::fkin_body(&m, &blist, &thetalist);
 
     assert_float_absolute_eq!(t[(0, 0)], 0.0, TOLERANCE);
     assert_float_absolute_eq!(t[(0, 1)], 1.0, TOLERANCE);
@@ -48,9 +48,9 @@ fn test_fkin_space() {
         nalgebra::Vector6::new(0.0, 0.0, 0.0, 0.0, 1.0, 0.0),
         nalgebra::Vector6::new(0.0, 0.0, -1.0, -6.0, 0.0, -0.1),
     ];
-    let thetalist = vec![PI / 2.0, 3.0, PI];
+    let thetalist = nalgebra::dvector![PI / 2.0, 3.0, PI];
 
-    let t = fkin_space(m, slist, thetalist);
+    let t = fkin_space(&m, &slist, &thetalist);
 
     assert_float_absolute_eq!(t[(0, 0)], 0.0, TOLERANCE);
     assert_float_absolute_eq!(t[(0, 1)], 1.0, TOLERANCE);

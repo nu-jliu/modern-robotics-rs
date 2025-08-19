@@ -295,7 +295,7 @@ fn test_matrix_exp6() {
         0.0,
         0.0,
     );
-    let t = modern_robotics::matrix_exp6(se3mat);
+    let t = modern_robotics::matrix_exp6(&se3mat);
 
     assert_float_absolute_eq!(t[(0, 0)], 1.0, TOLERANCE);
     assert_float_absolute_eq!(t[(0, 1)], 0.0, TOLERANCE);

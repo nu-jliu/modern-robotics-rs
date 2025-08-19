@@ -13,7 +13,7 @@ pub fn fkin_body(
         let bvec = blist[i];
         let theta = thetalist[i];
         let se3mat = vec_to_se3(&(bvec * theta));
-        let t_ij = matrix_exp6(se3mat);
+        let t_ij = matrix_exp6(&se3mat);
         t = t * t_ij;
     }
 
@@ -32,7 +32,7 @@ pub fn fkin_space(
         let svec = slist[j];
         let theta = thetalist[j];
         let se3mat = vec_to_se3(&(svec * theta));
-        let t_ij = matrix_exp6(se3mat);
+        let t_ij = matrix_exp6(&se3mat);
         t = t_ij * t;
     }
 

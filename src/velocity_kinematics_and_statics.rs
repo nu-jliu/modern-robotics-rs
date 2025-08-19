@@ -20,7 +20,7 @@ pub fn jacobian_body(
 
         let v = -bvec * theta;
         let se3mat = vec_to_se3(&v);
-        let tij = matrix_exp6(se3mat);
+        let tij = matrix_exp6(&se3mat);
         t = t * tij;
 
         let adt = adjoint(&t);
@@ -47,7 +47,7 @@ pub fn jacobian_space(
         let theta = thetalist[i - 1];
         let v = svec * theta;
         let se3mat = vec_to_se3(&v);
-        let tij = matrix_exp6(se3mat);
+        let tij = matrix_exp6(&se3mat);
         t = t * tij;
 
         let adt = adjoint(&t);

@@ -48,9 +48,12 @@ pub fn rot_inv(r: &nalgebra::Matrix3<f64>) -> nalgebra::Matrix3<f64> {
 /// let so3mat = modern_robotics::vec_to_so3(&omg);
 /// ```
 pub fn vec_to_so3(omg: &nalgebra::Vector3<f64>) -> nalgebra::Matrix3<f64> {
-    nalgebra::Matrix3::new(
-        0.0, -omg[2], omg[1], omg[2], 0.0, -omg[0], -omg[1], omg[0], 0.0,
-    )
+    let so3mat = nalgebra::matrix![
+        0.0, -omg[2], omg[1];
+        omg[2], 0.0, -omg[0];
+        -omg[1], omg[0], 0.0
+    ];
+    return so3mat;
 }
 
 /// Converts an so(3) representation to a 3-vector

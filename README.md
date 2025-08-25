@@ -8,7 +8,7 @@ A comprehensive Rust implementation of fundamental robotics algorithms and utili
 
 ## Overview
 
-This library provides essential mathematical utilities commonly used in robotics applications, with a focus on rigid body motions, SO(3) and SE(3) operations, forward and inverse kinematics, and numerical computations. The implementation leverages the `nalgebra` linear algebra library for efficient mathematical operations and follows modern robotics theory.
+This library provides essential mathematical utilities commonly used in robotics applications, with a focus on rigid body motions, SO(3) and SE(3) operations, forward and inverse kinematics, robot dynamics, and numerical computations. The implementation leverages the `nalgebra` linear algebra library for efficient mathematical operations and follows modern robotics theory.
 
 ## Features
 
@@ -20,6 +20,7 @@ This library provides essential mathematical utilities commonly used in robotics
 - **Forward Kinematics**: Body frame and space frame forward kinematics calculations
 - **Inverse Kinematics**: Newton-Raphson method for body and space frame inverse kinematics
 - **Velocity Kinematics**: Jacobian calculations for both body and space frames
+- **Dynamics of Open Chains**: Robot dynamics calculations including inverse dynamics and mass matrix computation
 - **Numerical Tolerance Checking**: Check if values are near zero within a specified tolerance
 - **Vector Normalization**: Normalize vectors to unit length using nalgebra's DVector
 - **Robust Testing**: Comprehensive test suite covering all mathematical operations
@@ -124,6 +125,24 @@ let target_pose = Matrix4::identity(); // Target end-effector pose
 
 let (theta_body, success_body) = ikin_body(&blist, &m, &target_pose, &thetalist0, emog, ev);
 let (theta_space, success_space) = ikin_space(&slist, &m, &target_pose, &thetalist0, emog, ev);
+
+// Dynamics calculations
+let dthetalist = DVector::from_vec(vec![0.1, 0.2, 0.3]); // Joint velocities
+let ddthetalist = DVector::from_vec(vec![1.0, 2.0, 3.0]); // Joint accelerations
+let g = Vector3::new(0.0, 0.0, -9.8); // Gravity vector
+let ftip = Vector6::zeros(); // End-effector wrench
+let mlist = vec![Matrix4::identity(); 4]; // Link transformations
+let glist = vec![Matrix6::identity(); 3]; // Link inertia matrices
+
+// Inverse dynamics (compute required joint torques)
+let taulist = inverse_dynamics(&thetalist, &dthetalist, &ddthetalist, &g, &ftip, &mlist, &glist, &slist);
+
+// Mass matrix computation
+let mass_matrix = mass_matrix(&thetalist, &mlist, &glist, &slist);
+
+// Adjoint representation of twist
+let twist = Vector6::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
+let ad_twist = ad(&twist);
 ```
 
 ## API Reference
@@ -316,6 +335,32 @@ Computes inverse kinematics using the space frame representation with Newton-Rap
 - **Returns**: Tuple of (joint angles, convergence success flag)
 - **Location**: `src/inverse_kinematics.rs:48`
 
+### Dynamics of Open Chains (`dynamics_of_open_chains` module)
+
+#### `ad(v: &Vector6<f64>) -> Matrix6<f64>`
+
+Computes the adjoint representation of a 6D twist vector.
+
+- **Parameters**: `v` - A 6D twist vector [ωₓ, ωᵧ, ωᵤ, vₓ, vᵧ, vᵤ]
+- **Returns**: The 6×6 adjoint matrix representation
+- **Location**: `src/dynamics_of_open_chains.rs:5`
+
+#### `inverse_dynamics(thetalist, dthetalist, ddthetalist, g, ftip, mlist, glist, slist) -> DVector<f64>`
+
+Computes the joint torques required for given joint positions, velocities, and accelerations using the Newton-Euler inverse dynamics algorithm.
+
+- **Parameters**: `thetalist` - Joint angles, `dthetalist` - Joint velocities, `ddthetalist` - Joint accelerations, `g` - Gravity vector, `ftip` - End-effector wrench, `mlist` - Link transformations, `glist` - Link inertia matrices, `slist` - Space screw axes
+- **Returns**: Vector of required joint torques
+- **Location**: `src/dynamics_of_open_chains.rs:16`
+
+#### `mass_matrix(thetalist, mlist, glist, slist) -> DMatrix<f64>`
+
+Computes the mass matrix (inertia matrix) of the robot at a given configuration.
+
+- **Parameters**: `thetalist` - Joint angles, `mlist` - Link transformations, `glist` - Link inertia matrices, `slist` - Space screw axes
+- **Returns**: The n×n mass matrix where n is the number of joints
+- **Location**: `src/dynamics_of_open_chains.rs:87`
+
 ### Velocity Kinematics (`velocity_kinematics_and_statics` module)
 
 #### `jacobian_body(blist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix6xX<f64>`
@@ -347,13 +392,15 @@ modern-robotics-rs/
 │   ├── rigid_body_motions.rs                      # SO(3) and SE(3) operations
 │   ├── forward_kinematics.rs                      # Forward kinematics calculations
 │   ├── inverse_kinematics.rs                      # Inverse kinematics calculations
-│   └── velocity_kinematics_and_statics.rs         # Jacobian and velocity kinematics
+│   ├── velocity_kinematics_and_statics.rs         # Jacobian and velocity kinematics
+│   └── dynamics_of_open_chains.rs                 # Robot dynamics calculations
 ├── tests/
 │   ├── test_utils.rs                              # Tests for utility functions
 │   ├── test_rigid_body_motions.rs                 # Tests for rigid body motion functions
 │   ├── test_forward_kinematics.rs                 # Tests for forward kinematics
 │   ├── test_inverse_kinematics.rs                 # Tests for inverse kinematics
-│   └── test_velocity_kinematics_and_statics.rs    # Tests for velocity kinematics
+│   ├── test_velocity_kinematics_and_statics.rs    # Tests for velocity kinematics
+│   └── test_dynamics_of_open_chains.rs            # Tests for dynamics calculations
 ├── target/                                        # Build artifacts (generated)
 ├── Cargo.toml                                     # Package configuration
 ├── Cargo.lock                                     # Dependency lock file
@@ -374,6 +421,7 @@ The project includes comprehensive tests covering:
 - Forward kinematics for both body and space frames
 - Inverse kinematics using Newton-Raphson method
 - Jacobian calculations for velocity kinematics
+- Robot dynamics including inverse dynamics and mass matrix computation
 - Numerical precision and edge cases
 
 Run tests with:
@@ -417,6 +465,11 @@ cargo test
 #### Velocity Kinematics Tests (`test_velocity_kinematics_and_statics.rs`)
 - **`test_jacobian_body`**: Tests body Jacobian matrix computation
 - **`test_jacobian_space`**: Tests space Jacobian matrix computation
+
+#### Dynamics of Open Chains Tests (`test_dynamics_of_open_chains.rs`)
+- **`test_ad`**: Tests adjoint representation computation for 6D twist vectors
+- **`test_inverse_dynamics`**: Tests inverse dynamics algorithm for computing joint torques
+- **`test_mass_matrix`**: Tests mass matrix computation for robot configurations
 
 ## Constants
 
@@ -471,10 +524,11 @@ This library serves as a foundation for robotics applications in Rust. Contribut
 
 Potential areas for expansion include:
 - Quaternion operations and conversions
-- Dynamics and trajectory planning algorithms
+- Forward dynamics algorithms
+- Trajectory planning algorithms
 - Additional Lie group operations
 - Path planning utilities
 - Support for different robot configurations
 - Integration with robot simulation frameworks
 - Optimization-based inverse kinematics solvers
-- Robot dynamics and control algorithms
+- Robot control algorithms and closed-loop dynamics

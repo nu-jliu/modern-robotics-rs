@@ -6,7 +6,7 @@ version = "0.1.1"
 
 [dependencies]
 assert_float_eq = "1.1.4"
-nalgebra = "0.33.2"
+nalgebra = "0.34.0"
 
 [lib]
 name = "modern_robotics"
@@ -27,3 +27,7 @@ path = "tests/test_forward_kinematics.rs"
 [[test]]
 name = "test_inverse_kinematics"
 path = "tests/test_inverse_kinematics.rs"
+
+[[test]]
+name = "test_dynamics_of_open_chains"
+pat = "tests/test_dynamics_of_open_chains.rs"

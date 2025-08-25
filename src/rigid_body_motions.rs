@@ -5,7 +5,7 @@ use nalgebra;
 ///
 /// # Arguments
 ///
-/// - `r` (`nalgebra`) - A rotation matrix
+/// - `r` (`nalgebra::Matrix3<f64>`) - A rotation matrix
 ///
 /// # Returns
 ///
@@ -32,7 +32,7 @@ pub fn rot_inv(r: &nalgebra::Matrix3<f64>) -> nalgebra::Matrix3<f64> {
 ///
 /// # Arguments
 ///
-/// - `omg` (`nalgebra`) - A 3-vector
+/// - `omg` (`nalgebra::Vector3<f64>`) - A 3-vector
 ///
 /// # Returns
 ///
@@ -60,7 +60,7 @@ pub fn vec_to_so3(omg: &nalgebra::Vector3<f64>) -> nalgebra::Matrix3<f64> {
 ///
 /// # Arguments
 ///
-/// - `so3mat` (`&nalgebra`) - A 3x3 skew-symmetric matrix
+/// - `so3mat` (`&nalgebra::Matrix3<f64>`) - A 3x3 skew-symmetric matrix
 ///
 /// # Returns
 ///
@@ -88,7 +88,7 @@ pub fn so3_to_vec(so3mat: &nalgebra::Matrix3<f64>) -> nalgebra::Vector3<f64> {
 ///
 /// # Arguments
 ///
-/// - `expc3` (`&nalgebra`) - A 3-vector of exponential coordinates for rotation
+/// - `expc3` (`&nalgebra::Vector3<f64>`) - A 3-vector of exponential coordinates for rotation
 ///
 /// # Returns
 ///
@@ -117,7 +117,7 @@ pub fn axis_ang3(expc3: &nalgebra::Vector3<f64>) -> (nalgebra::Vector3<f64>, f64
 ///
 /// # Arguments
 ///
-/// - `so3mat` (`&nalgebra`) - A 3x3 skew-symmetric matrix
+/// - `so3mat` (`&nalgebra::Matrix3<f64>`) - A 3x3 skew-symmetric matrix
 ///
 /// # Returns
 ///
@@ -154,7 +154,7 @@ pub fn matrix_exp3(so3mat: &nalgebra::Matrix3<f64>) -> nalgebra::Matrix3<f64> {
 ///
 /// # Arguments
 ///
-/// - `r` (`&nalgebra`) - A 3x3 rotation matrix
+/// - `r` (`&nalgebra::Matrix3<f64>`) - A 3x3 rotation matrix
 ///
 /// # Returns
 ///
@@ -202,8 +202,8 @@ pub fn matrix_log3(r: &nalgebra::Matrix3<f64>) -> nalgebra::Matrix3<f64> {
 ///
 /// # Arguments
 ///
-/// - `r` (`&nalgebra`) - A 3x3 rotation matrix
-/// - `p` (`&nalgebra`) - A 3-vector
+/// - `r` (`&nalgebra::Matrix3<f64>`) - A 3x3 rotation matrix
+/// - `p` (`&nalgebra::Vector3<f64>`) - A 3-vector
 ///
 /// # Returns
 ///
@@ -237,7 +237,7 @@ pub fn rp_to_trans(
 ///
 /// # Arguments
 ///
-/// - `t` (`&nalgebra`) - A homogeneous transformation matrix
+/// - `t` (`&nalgebra::Matrix4<f64>`) - A homogeneous transformation matrix
 ///
 /// # Returns
 ///
@@ -268,7 +268,7 @@ pub fn trans_to_rp(t: &nalgebra::Matrix4<f64>) -> (nalgebra::Matrix3<f64>, nalge
 ///
 /// # Arguments
 ///
-/// - `t` (`&nalgebra`) - A homogeneous transformation matrix
+/// - `t` (`&nalgebra::Matrix4<f64>`) - A homogeneous transformation matrix
 ///
 /// # Returns
 ///
@@ -303,7 +303,7 @@ pub fn trans_inv(t: &nalgebra::Matrix4<f64>) -> nalgebra::Matrix4<f64> {
 ///
 /// # Arguments
 ///
-/// - `v` (`&nalgebra`) - A 6-vector representing a spatial velocity
+/// - `v` (`&nalgebra::Vector6<f64>`) - A 6-vector representing a spatial velocity
 ///
 /// # Returns
 ///
@@ -332,7 +332,7 @@ pub fn vec_to_se3(v: &nalgebra::Vector6<f64>) -> nalgebra::Matrix4<f64> {
 ///
 /// # Arguments
 ///
-/// - `se3mat` (`&nalgebra`) - A 4x4 matrix in se3
+/// - `se3mat` (`&nalgebra::Matrix4<f64>`) - A 4x4 matrix in se3
 ///
 /// # Returns
 ///
@@ -367,11 +367,11 @@ pub fn se3_to_vec(se3mat: &nalgebra::Matrix4<f64>) -> nalgebra::Vector6<f64> {
 ///
 /// # Arguments
 ///
-/// - `t` (`&nalgebra`) - A homogeneous transformation matrix.
+/// - `t` (`&nalgebra::Matrix4<f64>`) - A homogeneous transformation matrix.
 ///
 /// # Returns
 ///
-/// - `nalgebra::Matrix6<f64>` - The 6x6 adjoint representation [AdT] of T.
+/// - `nalgebra::Matrix6<f64>` - The 6x6 adjoint representation \[AdT\] of T.
 ///
 /// # Examples
 ///
@@ -399,8 +399,8 @@ pub fn adjoint(t: &nalgebra::Matrix4<f64>) -> nalgebra::Matrix6<f64> {
 ///
 /// # Arguments
 ///
-/// - `q` (`&nalgebra`) - A point lying on the screw axis
-/// - `s` (`&nalgebra`) - A unit vector in the direction of the screw axis
+/// - `q` (`&nalgebra::Vector3<f64>`) - A point lying on the screw axis
+/// - `s` (`&nalgebra::Vector3<f64>`) - A unit vector in the direction of the screw axis
 /// - `h` (`f64`) - The pitch of the screw axis
 ///
 /// # Returns
@@ -433,7 +433,7 @@ pub fn screw_to_axis(
 ///
 /// # Arguments
 ///
-/// - `expc6` (`&nalgebra`) - A 6-vector of exponential coordinates for rigid-body motion S*theta
+/// - `expc6` (`&nalgebra::Vector6<f64>`) - A 6-vector of exponential coordinates for rigid-body motion S*theta
 ///
 /// # Returns
 ///
@@ -464,7 +464,7 @@ pub fn axis_ang6(expc6: &nalgebra::Vector6<f64>) -> (nalgebra::Vector6<f64>, f64
 ///
 /// # Arguments
 ///
-/// - `se3mat` (`nalgebra`) - A matrix in se3
+/// - `se3mat` (`nalgebra::Matrix4<f64>`) - A matrix in se3
 ///
 /// # Returns
 ///
@@ -517,7 +517,7 @@ pub fn matrix_exp6(se3mat: &nalgebra::Matrix4<f64>) -> nalgebra::Matrix4<f64> {
 ///
 /// # Arguments
 ///
-/// - `t` (`&nalgebra`) - A matrix in SE3
+/// - `t` (`&nalgebra::Matrix4<f64>`) - A matrix in SE3
 ///
 /// # Returns
 ///

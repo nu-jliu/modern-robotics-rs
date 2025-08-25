@@ -170,3 +170,54 @@ fn test_mass_matrix() {
     assert_float_absolute_eq!(m[(2, 1)], 4.32157368e-01, TOLERANCE);
     assert_float_absolute_eq!(m[(2, 2)], 1.91630858e-01, TOLERANCE);
 }
+
+#[test]
+fn test_vel_quadratic_forces() {
+    let thetalist = nalgebra::dvector![0.1, 0.1, 0.1];
+    let dthetalist = nalgebra::dvector![0.1, 0.2, 0.3];
+    let m01 = nalgebra::matrix![
+        1.0, 0.0, 0.0, 0.0;
+        0.0, 1.0, 0.0, 0.0;
+        0.0, 0.0, 1.0, 0.089159;
+        0.0, 0.0, 0.0, 1.0
+    ];
+    let m12 = nalgebra::matrix![
+        0.0, 0.0, 1.0, 0.28;
+        0.0, 1.0, 0.0, 0.13585;
+        -1.0, 0.0, 0.0, 0.0;
+        0.0, 0.0, 0.0, 1.0
+    ];
+    let m23 = nalgebra::matrix![
+        1.0, 0.0, 0.0, 0.0;
+        0.0, 1.0, 0.0, -0.1197;
+        0.0, 0.0, 1.0, 0.395;
+        0.0, 0.0, 0.0, 1.0
+    ];
+    let m34 = nalgebra::matrix![
+        1.0, 0.0, 0.0, 0.0;
+        0.0, 1.0, 0.0, 0.0;
+        0.0, 0.0, 1.0, 0.14225;
+        0.0, 0.0, 0.0, 1.0
+    ];
+    let g1 = nalgebra::Matrix6::from_diagonal(&nalgebra::Vector6::new(
+        0.010267, 0.010267, 0.00666, 3.7, 3.7, 3.7,
+    ));
+    let g2 = nalgebra::Matrix6::from_diagonal(&nalgebra::Vector6::new(
+        0.22689, 0.22689, 0.0151074, 8.393, 8.393, 8.393,
+    ));
+    let g3 = nalgebra::Matrix6::from_diagonal(&nalgebra::Vector6::new(
+        0.0494433, 0.0494433, 0.004095, 2.275, 2.275, 2.275,
+    ));
+    let s1 = nalgebra::Vector6::new(1.0, 0.0, 1.0, 0.0, 1.0, 0.0);
+    let s2 = nalgebra::Vector6::new(0.0, 1.0, 0.0, -0.089, 0.0, 0.0);
+    let s3 = nalgebra::Vector6::new(0.0, 1.0, 0.0, -0.089, 0.0, 0.425);
+    let mlist = vec![m01, m12, m23, m34];
+    let glist = vec![g1, g2, g3];
+    let slist = vec![s1, s2, s3];
+
+    let c = modern_robotics::vel_quadratic_forces(&thetalist, &dthetalist, &mlist, &glist, &slist);
+
+    assert_float_absolute_eq!(c[0], 0.26453118, TOLERANCE);
+    assert_float_absolute_eq!(c[1], -0.05505157, TOLERANCE);
+    assert_float_absolute_eq!(c[2], -0.00689132, TOLERANCE);
+}

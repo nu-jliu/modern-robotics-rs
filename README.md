@@ -27,7 +27,7 @@ This library provides essential mathematical utilities commonly used in robotics
 
 ## Dependencies
 
-- `nalgebra` (v0.33.2) - Linear algebra library for Rust
+- `nalgebra` (v0.34.0) - Linear algebra library for Rust
 - `assert_float_eq` (v1.1.4) - Floating point assertions for testing
 
 ## Installation
@@ -138,7 +138,10 @@ let glist = vec![Matrix6::identity(); 3]; // Link inertia matrices
 let taulist = inverse_dynamics(&thetalist, &dthetalist, &ddthetalist, &g, &ftip, &mlist, &glist, &slist);
 
 // Mass matrix computation
-let mass_matrix = mass_matrix(&thetalist, &mlist, &glist, &slist);
+let mass_matrix_m = mass_matrix(&thetalist, &mlist, &glist, &slist);
+
+// Velocity-dependent forces (Coriolis and centrifugal forces)
+let c_forces = vel_quadratic_forces(&thetalist, &dthetalist, &mlist, &glist, &slist);
 
 // Adjoint representation of twist
 let twist = Vector6::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
@@ -361,6 +364,14 @@ Computes the mass matrix (inertia matrix) of the robot at a given configuration.
 - **Returns**: The n×n mass matrix where n is the number of joints
 - **Location**: `src/dynamics_of_open_chains.rs:87`
 
+#### `vel_quadratic_forces(thetalist, dthetalist, mlist, glist, slist) -> DVector<f64>`
+
+Computes the velocity-dependent forces (Coriolis and centrifugal forces) acting on the robot.
+
+- **Parameters**: `thetalist` - Joint angles, `dthetalist` - Joint velocities, `mlist` - Link transformations, `glist` - Link inertia matrices, `slist` - Space screw axes
+- **Returns**: Vector of velocity-dependent forces
+- **Location**: `src/dynamics_of_open_chains.rs:119`
+
 ### Velocity Kinematics (`velocity_kinematics_and_statics` module)
 
 #### `jacobian_body(blist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix6xX<f64>`
@@ -470,6 +481,7 @@ cargo test
 - **`test_ad`**: Tests adjoint representation computation for 6D twist vectors
 - **`test_inverse_dynamics`**: Tests inverse dynamics algorithm for computing joint torques
 - **`test_mass_matrix`**: Tests mass matrix computation for robot configurations
+- **`test_vel_quadratic_forces`**: Tests velocity-dependent forces (Coriolis and centrifugal) computation
 
 ## Constants
 

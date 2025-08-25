@@ -94,11 +94,11 @@ pub fn mass_matrix(
     let mut m = nalgebra::DMatrix::zeros(n, n);
 
     for i in 0..n {
-        let dthetalist: nalgebra::DVector<f64> = nalgebra::DVector::zeros(n);
-        let mut ddthetalist: nalgebra::DVector<f64> = nalgebra::DVector::zeros(n);
+        let dthetalist = nalgebra::DVector::zeros(n);
+        let mut ddthetalist = nalgebra::DVector::zeros(n);
         ddthetalist[i] = 1.0;
-        let g: nalgebra::Vector3<f64> = nalgebra::Vector3::zeros();
-        let ftip: nalgebra::Vector6<f64> = nalgebra::Vector6::zeros();
+        let g = nalgebra::Vector3::zeros();
+        let ftip = nalgebra::Vector6::zeros();
         let taulist = inverse_dynamics(
             thetalist,
             &dthetalist,
@@ -114,4 +114,30 @@ pub fn mass_matrix(
     }
 
     return m;
+}
+
+pub fn vel_quadratic_forces(
+    thetalist: &nalgebra::DVector<f64>,
+    dthetalist: &nalgebra::DVector<f64>,
+    mlist: &Vec<nalgebra::Matrix4<f64>>,
+    glist: &Vec<nalgebra::Matrix6<f64>>,
+    slist: &Vec<nalgebra::Vector6<f64>>,
+) -> nalgebra::DVector<f64> {
+    let n = thetalist.len();
+    let ddthetalist = nalgebra::DVector::zeros(n);
+    let g = nalgebra::Vector3::zeros();
+    let ftip = nalgebra::Vector6::zeros();
+
+    let c = inverse_dynamics(
+        thetalist,
+        dthetalist,
+        &ddthetalist,
+        &g,
+        &ftip,
+        mlist,
+        glist,
+        slist,
+    );
+
+    return c;
 }

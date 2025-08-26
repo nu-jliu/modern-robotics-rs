@@ -30,4 +30,8 @@ path = "tests/test_inverse_kinematics.rs"
 
 [[test]]
 name = "test_dynamics_of_open_chains"
-pat = "tests/test_dynamics_of_open_chains.rs"
+path = "tests/test_dynamics_of_open_chains.rs"
+
+[[test]]
+name = "test_trajectory_generation"
+path = "tests/test_trajectory_generation.rs"

@@ -20,7 +20,7 @@ This library provides essential mathematical utilities commonly used in robotics
 - **Forward Kinematics**: Body frame and space frame forward kinematics calculations
 - **Inverse Kinematics**: Newton-Raphson method for body and space frame inverse kinematics
 - **Velocity Kinematics**: Jacobian calculations for both body and space frames
-- **Dynamics of Open Chains**: Robot dynamics calculations including inverse dynamics and mass matrix computation
+- **Dynamics of Open Chains**: Robot dynamics calculations including inverse dynamics, forward dynamics, mass matrix computation, gravity forces, and trajectory simulation
 - **Numerical Tolerance Checking**: Check if values are near zero within a specified tolerance
 - **Vector Normalization**: Normalize vectors to unit length using nalgebra's DVector
 - **Robust Testing**: Comprehensive test suite covering all mathematical operations
@@ -36,7 +36,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-modern-robotics = "0.1.1"
+modern-robotics = "0.1.2"
 ```
 
 ## Usage
@@ -142,6 +142,20 @@ let mass_matrix_m = mass_matrix(&thetalist, &mlist, &glist, &slist);
 
 // Velocity-dependent forces (Coriolis and centrifugal forces)
 let c_forces = vel_quadratic_forces(&thetalist, &dthetalist, &mlist, &glist, &slist);
+
+// Gravity forces
+let grav_forces = gravity_forces(&thetalist, &g, &mlist, &glist, &slist);
+
+// End-effector forces
+let ee_forces = end_effector_forces(&thetalist, &ftip, &mlist, &glist, &slist);
+
+// Forward dynamics (compute joint accelerations from torques)
+let taulist = DVector::from_vec(vec![1.0, 2.0, 3.0]); // Applied joint torques
+let joint_accelerations = forward_dynamics(&thetalist, &dthetalist, &taulist, &g, &ftip, &mlist, &glist, &slist);
+
+// Euler integration step for trajectory simulation
+let dt = 0.01; // Time step
+let (theta_next, dtheta_next) = euler_step(&thetalist, &dthetalist, &joint_accelerations, dt);
 
 // Adjoint representation of twist
 let twist = Vector6::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
@@ -372,6 +386,54 @@ Computes the velocity-dependent forces (Coriolis and centrifugal forces) acting 
 - **Returns**: Vector of velocity-dependent forces
 - **Location**: `src/dynamics_of_open_chains.rs:119`
 
+#### `gravity_forces(thetalist, g, mlist, glist, slist) -> DVector<f64>`
+
+Computes the gravitational forces acting on the robot joints.
+
+- **Parameters**: `thetalist` - Joint angles, `g` - Gravity vector, `mlist` - Link transformations, `glist` - Link inertia matrices, `slist` - Space screw axes
+- **Returns**: Vector of gravitational forces
+- **Location**: `src/dynamics_of_open_chains.rs:145`
+
+#### `end_effector_forces(thetalist, ftip, mlist, glist, slist) -> DVector<f64>`
+
+Computes the joint torques required to generate specified end-effector forces.
+
+- **Parameters**: `thetalist` - Joint angles, `ftip` - End-effector wrench, `mlist` - Link transformations, `glist` - Link inertia matrices, `slist` - Space screw axes
+- **Returns**: Vector of joint torques due to end-effector forces
+- **Location**: `src/dynamics_of_open_chains.rs:171`
+
+#### `forward_dynamics(thetalist, dthetalist, taulist, g, ftip, mlist, glist, slist) -> DVector<f64>`
+
+Computes joint accelerations from applied joint torques using forward dynamics.
+
+- **Parameters**: `thetalist` - Joint angles, `dthetalist` - Joint velocities, `taulist` - Applied joint torques, `g` - Gravity vector, `ftip` - End-effector wrench, `mlist` - Link transformations, `glist` - Link inertia matrices, `slist` - Space screw axes
+- **Returns**: Vector of joint accelerations
+- **Location**: `src/dynamics_of_open_chains.rs:197`
+
+#### `euler_step(thetalist, dthetalist, ddthetalist, dt) -> (DVector<f64>, DVector<f64>)`
+
+Performs one Euler integration step for trajectory simulation.
+
+- **Parameters**: `thetalist` - Current joint angles, `dthetalist` - Current joint velocities, `ddthetalist` - Joint accelerations, `dt` - Time step
+- **Returns**: Tuple of (next joint angles, next joint velocities)
+- **Location**: `src/dynamics_of_open_chains.rs:225`
+
+#### `inverse_dynamics_trajectory(thetamat, dthetamat, ddthetamat, g, ftipmat, mlist, glist, slist) -> Vec<DVector<f64>>`
+
+Computes inverse dynamics for an entire trajectory of robot configurations.
+
+- **Parameters**: `thetamat` - Trajectory of joint angles, `dthetamat` - Trajectory of joint velocities, `ddthetamat` - Trajectory of joint accelerations, `g` - Gravity vector, `ftipmat` - Trajectory of end-effector wrenches, `mlist` - Link transformations, `glist` - Link inertia matrices, `slist` - Space screw axes
+- **Returns**: Vector of required joint torque trajectories
+- **Location**: `src/dynamics_of_open_chains.rs:236`
+
+#### `forward_dynamics_trajectory(thetalist, dthetalist, taumat, g, ftipmat, mlist, glist, slist, dt, int_res) -> (Vec<DVector<f64>>, Vec<DVector<f64>>)`
+
+Simulates robot motion forward in time given torque inputs using forward dynamics.
+
+- **Parameters**: `thetalist` - Initial joint angles, `dthetalist` - Initial joint velocities, `taumat` - Trajectory of applied torques, `g` - Gravity vector, `ftipmat` - Trajectory of end-effector wrenches, `mlist` - Link transformations, `glist` - Link inertia matrices, `slist` - Space screw axes, `dt` - Time step, `int_res` - Integration resolution
+- **Returns**: Tuple of (joint angle trajectory, joint velocity trajectory)
+- **Location**: `src/dynamics_of_open_chains.rs:271`
+
 ### Velocity Kinematics (`velocity_kinematics_and_statics` module)
 
 #### `jacobian_body(blist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix6xX<f64>`
@@ -482,6 +544,12 @@ cargo test
 - **`test_inverse_dynamics`**: Tests inverse dynamics algorithm for computing joint torques
 - **`test_mass_matrix`**: Tests mass matrix computation for robot configurations
 - **`test_vel_quadratic_forces`**: Tests velocity-dependent forces (Coriolis and centrifugal) computation
+- **`test_gravity_forces`**: Tests gravitational forces computation
+- **`test_end_effector_forces`**: Tests end-effector force mapping to joint torques
+- **`test_forward_dynamics`**: Tests forward dynamics for computing joint accelerations
+- **`test_euler_step`**: Tests Euler integration step for trajectory simulation
+- **`test_inverse_dynamics_trajectory`**: Tests inverse dynamics for trajectory computation
+- **`test_forward_dynamics_trajectory`**: Tests forward dynamics trajectory simulation
 
 ## Constants
 
@@ -522,7 +590,8 @@ cargo doc --open
 
 ## Version History
 
-- **v0.1.1**: Current version with basic vector operations and tolerance checking
+- **v0.1.2**: Current version with expanded dynamics module including forward dynamics, gravity forces, trajectory simulation, and comprehensive robot dynamics algorithms
+- **v0.1.1**: Previous version with basic vector operations and tolerance checking
 
 ## License
 
@@ -536,11 +605,12 @@ This library serves as a foundation for robotics applications in Rust. Contribut
 
 Potential areas for expansion include:
 - Quaternion operations and conversions
-- Forward dynamics algorithms
-- Trajectory planning algorithms
+- Advanced trajectory planning algorithms
 - Additional Lie group operations
 - Path planning utilities
-- Support for different robot configurations
+- Support for different robot configurations (parallel robots, mobile robots)
 - Integration with robot simulation frameworks
 - Optimization-based inverse kinematics solvers
 - Robot control algorithms and closed-loop dynamics
+- Support for flexible joints and link compliance
+- Multi-body system dynamics

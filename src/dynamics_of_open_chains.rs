@@ -141,3 +141,170 @@ pub fn vel_quadratic_forces(
 
     return c;
 }
+
+pub fn gravity_forces(
+    thetalist: &nalgebra::DVector<f64>,
+    g: &nalgebra::Vector3<f64>,
+    mlist: &Vec<nalgebra::Matrix4<f64>>,
+    glist: &Vec<nalgebra::Matrix6<f64>>,
+    slist: &Vec<nalgebra::Vector6<f64>>,
+) -> nalgebra::DVector<f64> {
+    let n = thetalist.len();
+    let dthetalist = nalgebra::DVector::zeros(n);
+    let ddthetalist = nalgebra::DVector::zeros(n);
+    let ftip = nalgebra::Vector6::zeros();
+
+    let grav = inverse_dynamics(
+        thetalist,
+        &dthetalist,
+        &ddthetalist,
+        g,
+        &ftip,
+        mlist,
+        glist,
+        slist,
+    );
+
+    return grav;
+}
+
+pub fn end_effector_forces(
+    thetalist: &nalgebra::DVector<f64>,
+    ftip: &nalgebra::Vector6<f64>,
+    mlist: &Vec<nalgebra::Matrix4<f64>>,
+    glist: &Vec<nalgebra::Matrix6<f64>>,
+    slist: &Vec<nalgebra::Vector6<f64>>,
+) -> nalgebra::DVector<f64> {
+    let n = thetalist.len();
+    let dthetalist = nalgebra::DVector::zeros(n);
+    let ddthetalist = nalgebra::DVector::zeros(n);
+    let g = nalgebra::Vector3::zeros();
+
+    let jt_ftip = inverse_dynamics(
+        thetalist,
+        &dthetalist,
+        &ddthetalist,
+        &g,
+        ftip,
+        mlist,
+        glist,
+        slist,
+    );
+
+    return jt_ftip;
+}
+
+pub fn forward_dynamics(
+    thetalist: &nalgebra::DVector<f64>,
+    dthetalist: &nalgebra::DVector<f64>,
+    taulist: &nalgebra::DVector<f64>,
+    g: &nalgebra::Vector3<f64>,
+    ftip: &nalgebra::Vector6<f64>,
+    mlist: &Vec<nalgebra::Matrix4<f64>>,
+    glist: &Vec<nalgebra::Matrix6<f64>>,
+    slist: &Vec<nalgebra::Vector6<f64>>,
+) -> nalgebra::DVector<f64> {
+    let m = mass_matrix(thetalist, mlist, glist, slist);
+    let c = vel_quadratic_forces(thetalist, dthetalist, mlist, glist, slist);
+    let grav = gravity_forces(thetalist, g, mlist, glist, slist);
+    let jt_ftip = end_effector_forces(thetalist, ftip, mlist, glist, slist);
+
+    let rhs = taulist - c - grav - jt_ftip;
+
+    match m.try_inverse() {
+        Some(val) => {
+            return val * rhs;
+        }
+        None => {
+            let n = thetalist.len();
+            return nalgebra::DVector::zeros(n);
+        }
+    }
+}
+
+pub fn euler_step(
+    thetalist: &nalgebra::DVector<f64>,
+    dthetalist: &nalgebra::DVector<f64>,
+    ddthetalist: &nalgebra::DVector<f64>,
+    dt: f64,
+) -> (nalgebra::DVector<f64>, nalgebra::DVector<f64>) {
+    let thetslist_next = thetalist + dt * dthetalist;
+    let dthetalist_next = dthetalist + dt * ddthetalist;
+    return (thetslist_next, dthetalist_next);
+}
+
+pub fn inverse_dynamics_trajectory(
+    thetamat: &Vec<nalgebra::DVector<f64>>,
+    dthetamat: &Vec<nalgebra::DVector<f64>>,
+    ddthetamat: &Vec<nalgebra::DVector<f64>>,
+    g: &nalgebra::Vector3<f64>,
+    ftipmat: &Vec<nalgebra::Vector6<f64>>,
+    mlist: &Vec<nalgebra::Matrix4<f64>>,
+    glist: &Vec<nalgebra::Matrix6<f64>>,
+    slist: &Vec<nalgebra::Vector6<f64>>,
+) -> Vec<nalgebra::DVector<f64>> {
+    let n = thetamat.len();
+    let mut taumat = Vec::new();
+
+    for i in 0..n {
+        let thetalist = &thetamat[i];
+        let dthetalist = &dthetamat[i];
+        let ddthetalist = &ddthetamat[i];
+        let ftip = &ftipmat[i];
+
+        let taulist = inverse_dynamics(
+            thetalist,
+            dthetalist,
+            ddthetalist,
+            g,
+            ftip,
+            mlist,
+            glist,
+            slist,
+        );
+        taumat.push(taulist);
+    }
+
+    return taumat;
+}
+
+pub fn forward_dynamics_trajectory(
+    thetalist: &nalgebra::DVector<f64>,
+    dthetalist: &nalgebra::DVector<f64>,
+    taumat: &Vec<nalgebra::DVector<f64>>,
+    g: &nalgebra::Vector3<f64>,
+    ftipmat: &Vec<nalgebra::Vector6<f64>>,
+    mlist: &Vec<nalgebra::Matrix4<f64>>,
+    glist: &Vec<nalgebra::Matrix6<f64>>,
+    slist: &Vec<nalgebra::Vector6<f64>>,
+    dt: f64,
+    int_res: i32,
+) -> (Vec<nalgebra::DVector<f64>>, Vec<nalgebra::DVector<f64>>) {
+    let n = taumat.len();
+    let mut theta = thetalist.clone();
+    let mut dtheta = dthetalist.clone();
+    let mut thetamat = Vec::new();
+    let mut dthetamat = Vec::new();
+
+    thetamat.push(theta.clone());
+    dthetamat.push(dtheta.clone());
+
+    for i in 0..n {
+        let taulist = &taumat[i];
+        let ftip = &ftipmat[i];
+
+        for _ in 0..int_res {
+            let ddthetalist =
+                forward_dynamics(thetalist, dthetalist, taulist, g, ftip, mlist, glist, slist);
+
+            let (theta_next, dtheta_next) = euler_step(&theta, &dtheta, &ddthetalist, dt);
+            theta = theta_next;
+            dtheta = dtheta_next;
+
+            thetamat.push(theta.clone());
+            dthetamat.push(dtheta.clone());
+        }
+    }
+
+    return (thetamat, dthetamat);
+}

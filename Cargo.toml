@@ -2,7 +2,7 @@
 edition = "2024"
 name = "modern-robotics"
 readme = "README.md"
-version = "0.1.1"
+version = "0.1.2"
 
 [dependencies]
 assert_float_eq = "1.1.4"

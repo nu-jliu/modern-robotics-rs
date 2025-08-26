@@ -21,6 +21,7 @@ This library provides essential mathematical utilities commonly used in robotics
 - **Inverse Kinematics**: Newton-Raphson method for body and space frame inverse kinematics
 - **Velocity Kinematics**: Jacobian calculations for both body and space frames
 - **Dynamics of Open Chains**: Robot dynamics calculations including inverse dynamics, forward dynamics, mass matrix computation, gravity forces, and trajectory simulation
+- **Trajectory Generation**: Time scaling functions for smooth trajectory generation including cubic and quintic polynomial scaling
 - **Numerical Tolerance Checking**: Check if values are near zero within a specified tolerance
 - **Vector Normalization**: Normalize vectors to unit length using nalgebra's DVector
 - **Robust Testing**: Comprehensive test suite covering all mathematical operations
@@ -156,6 +157,12 @@ let joint_accelerations = forward_dynamics(&thetalist, &dthetalist, &taulist, &g
 // Euler integration step for trajectory simulation
 let dt = 0.01; // Time step
 let (theta_next, dtheta_next) = euler_step(&thetalist, &dthetalist, &joint_accelerations, dt);
+
+// Trajectory generation with time scaling
+let tf = 2.0; // Total time
+let t = 0.6; // Current time
+let s_cubic = cubic_time_scaling(tf, t); // Cubic polynomial scaling
+let s_quintic = quintic_time_scaling(tf, t); // Quintic polynomial scaling
 
 // Adjoint representation of twist
 let twist = Vector6::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
@@ -434,6 +441,24 @@ Simulates robot motion forward in time given torque inputs using forward dynamic
 - **Returns**: Tuple of (joint angle trajectory, joint velocity trajectory)
 - **Location**: `src/dynamics_of_open_chains.rs:271`
 
+### Trajectory Generation (`trajectory_generation` module)
+
+#### `cubic_time_scaling(tf: f64, t: f64) -> f64`
+
+Generates smooth time scaling using a cubic polynomial that starts and ends at zero velocity.
+
+- **Parameters**: `tf` - Total time duration, `t` - Current time
+- **Returns**: Scaling factor s(t) between 0 and 1
+- **Location**: `src/trajectory_generation.rs:1`
+
+#### `quintic_time_scaling(tf: f64, t: f64) -> f64`
+
+Generates smooth time scaling using a quintic polynomial that starts and ends with zero velocity and acceleration.
+
+- **Parameters**: `tf` - Total time duration, `t` - Current time  
+- **Returns**: Scaling factor s(t) between 0 and 1
+- **Location**: `src/trajectory_generation.rs:11`
+
 ### Velocity Kinematics (`velocity_kinematics_and_statics` module)
 
 #### `jacobian_body(blist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix6xX<f64>`
@@ -466,14 +491,16 @@ modern-robotics-rs/
 │   ├── forward_kinematics.rs                      # Forward kinematics calculations
 │   ├── inverse_kinematics.rs                      # Inverse kinematics calculations
 │   ├── velocity_kinematics_and_statics.rs         # Jacobian and velocity kinematics
-│   └── dynamics_of_open_chains.rs                 # Robot dynamics calculations
+│   ├── dynamics_of_open_chains.rs                 # Robot dynamics calculations
+│   └── trajectory_generation.rs                   # Time scaling for trajectory generation
 ├── tests/
 │   ├── test_utils.rs                              # Tests for utility functions
 │   ├── test_rigid_body_motions.rs                 # Tests for rigid body motion functions
 │   ├── test_forward_kinematics.rs                 # Tests for forward kinematics
 │   ├── test_inverse_kinematics.rs                 # Tests for inverse kinematics
 │   ├── test_velocity_kinematics_and_statics.rs    # Tests for velocity kinematics
-│   └── test_dynamics_of_open_chains.rs            # Tests for dynamics calculations
+│   ├── test_dynamics_of_open_chains.rs            # Tests for dynamics calculations
+│   └── test_trajectory_generation.rs              # Tests for trajectory generation
 ├── target/                                        # Build artifacts (generated)
 ├── Cargo.toml                                     # Package configuration
 ├── Cargo.lock                                     # Dependency lock file
@@ -495,6 +522,7 @@ The project includes comprehensive tests covering:
 - Inverse kinematics using Newton-Raphson method
 - Jacobian calculations for velocity kinematics
 - Robot dynamics including inverse dynamics and mass matrix computation
+- Trajectory generation with time scaling functions
 - Numerical precision and edge cases
 
 Run tests with:
@@ -550,6 +578,10 @@ cargo test
 - **`test_euler_step`**: Tests Euler integration step for trajectory simulation
 - **`test_inverse_dynamics_trajectory`**: Tests inverse dynamics for trajectory computation
 - **`test_forward_dynamics_trajectory`**: Tests forward dynamics trajectory simulation
+
+#### Trajectory Generation Tests (`test_trajectory_generation.rs`)
+- **`test_cubic_time_scaling`**: Tests cubic polynomial time scaling for smooth trajectory generation
+- **`test_qintic_time_scaling`**: Tests quintic polynomial time scaling for smooth trajectory generation with zero acceleration endpoints
 
 ## Constants
 

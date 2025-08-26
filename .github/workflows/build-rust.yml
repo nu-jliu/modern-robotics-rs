@@ -46,7 +46,11 @@ jobs:
 
       - name: Build package
         working-directory: ${{ github.workspace }}
-        run: cargo doc --document-private-items
+        run: cargo doc --no-deps --document-private-items
+
+      - name: Generate index.html
+        working-directory: ${{ github.workspace }}/target/doc
+        run: echo '<meta http-equiv="refresh" content="0; url=./modern_robotics/index.html">' > index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

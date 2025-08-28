@@ -504,7 +504,6 @@ modern-robotics-rs/
 ├── target/                                        # Build artifacts (generated)
 ├── Cargo.toml                                     # Package configuration
 ├── Cargo.lock                                     # Dependency lock file
-├── CLAUDE.md                                      # Claude Code guidance
 └── README.md                                      # This file
 ```
 

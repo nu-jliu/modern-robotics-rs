@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Method"],"fn":["cartesian_trajectory","cubic_time_scaling","joint_trajectory","quintic_time_scaling","screw_trajectory"]};

@@ -8,7 +8,7 @@ A comprehensive Rust implementation of fundamental robotics algorithms and utili
 
 ## Overview
 
-This library provides essential mathematical utilities commonly used in robotics applications, with a focus on rigid body motions, SO(3) and SE(3) operations, forward and inverse kinematics, robot dynamics, and numerical computations. The implementation leverages the `nalgebra` linear algebra library for efficient mathematical operations and follows modern robotics theory.
+This library provides essential mathematical utilities commonly used in robotics applications, with a focus on rigid body motions, SO(3) and SE(3) operations, forward and inverse kinematics, robot dynamics, trajectory generation, and numerical computations. The implementation leverages the `nalgebra` linear algebra library for efficient mathematical operations and follows modern robotics theory.
 
 ## Features
 
@@ -21,7 +21,7 @@ This library provides essential mathematical utilities commonly used in robotics
 - **Inverse Kinematics**: Newton-Raphson method for body and space frame inverse kinematics
 - **Velocity Kinematics**: Jacobian calculations for both body and space frames
 - **Dynamics of Open Chains**: Robot dynamics calculations including inverse dynamics, forward dynamics, mass matrix computation, gravity forces, and trajectory simulation
-- **Trajectory Generation**: Time scaling functions for smooth trajectory generation including cubic and quintic polynomial scaling
+- **Trajectory Generation**: Complete trajectory generation system including cubic and quintic time scaling, joint space trajectories, screw motion trajectories, and Cartesian space trajectories
 - **Numerical Tolerance Checking**: Check if values are near zero within a specified tolerance
 - **Vector Normalization**: Normalize vectors to unit length using nalgebra's DVector
 - **Robust Testing**: Comprehensive test suite covering all mathematical operations
@@ -163,6 +163,22 @@ let tf = 2.0; // Total time
 let t = 0.6; // Current time
 let s_cubic = cubic_time_scaling(tf, t); // Cubic polynomial scaling
 let s_quintic = quintic_time_scaling(tf, t); // Quintic polynomial scaling
+
+// Joint space trajectory generation
+let thetastart = DVector::from_vec(vec![0.0, 0.0, 0.0]);
+let thetaend = DVector::from_vec(vec![1.57, 1.0, 0.5]);
+let tf = 5.0; // Total time
+let n = 10; // Number of trajectory points
+let method = Method::Cubic; // or Method::Quintic
+let joint_traj = joint_trajectory(&thetastart, &thetaend, tf, n, method);
+
+// Screw motion trajectory (smooth SE(3) interpolation)
+let xstart = Matrix4::identity(); // Starting pose
+let xend = rp_to_trans(rotation_matrix, Vector3::new(1.0, 2.0, 3.0)); // End pose
+let screw_traj = screw_trajectory(&xstart, &xend, tf, n, Method::Quintic);
+
+// Cartesian trajectory (decoupled rotation and translation)
+let cartesian_traj = cartesian_trajectory(&xstart, &xend, tf, n, Method::Cubic);
 
 // Adjoint representation of twist
 let twist = Vector6::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
@@ -443,13 +459,20 @@ Simulates robot motion forward in time given torque inputs using forward dynamic
 
 ### Trajectory Generation (`trajectory_generation` module)
 
+#### `Method` enum
+
+Defines the time scaling method for trajectory generation.
+
+- **Variants**: `Cubic`, `Quintic`
+- **Location**: `src/trajectory_generation.rs:8`
+
 #### `cubic_time_scaling(tf: f64, t: f64) -> f64`
 
 Generates smooth time scaling using a cubic polynomial that starts and ends at zero velocity.
 
 - **Parameters**: `tf` - Total time duration, `t` - Current time
 - **Returns**: Scaling factor s(t) between 0 and 1
-- **Location**: `src/trajectory_generation.rs:1`
+- **Location**: `src/trajectory_generation.rs:13`
 
 #### `quintic_time_scaling(tf: f64, t: f64) -> f64`
 
@@ -457,7 +480,31 @@ Generates smooth time scaling using a quintic polynomial that starts and ends wi
 
 - **Parameters**: `tf` - Total time duration, `t` - Current time  
 - **Returns**: Scaling factor s(t) between 0 and 1
-- **Location**: `src/trajectory_generation.rs:11`
+- **Location**: `src/trajectory_generation.rs:23`
+
+#### `joint_trajectory(thetastart: &DVector<f64>, thetaend: &DVector<f64>, tf: f64, n: usize, method: Method) -> Vec<DVector<f64>>`
+
+Generates a smooth joint space trajectory between start and end configurations.
+
+- **Parameters**: `thetastart` - Initial joint angles, `thetaend` - Final joint angles, `tf` - Total time, `n` - Number of trajectory points, `method` - Time scaling method
+- **Returns**: Vector of joint angle configurations along the trajectory
+- **Location**: `src/trajectory_generation.rs:35`
+
+#### `screw_trajectory(xstart: &Matrix4<f64>, xend: &Matrix4<f64>, tf: f64, n: usize, method: Method) -> Vec<Matrix4<f64>>`
+
+Generates a smooth SE(3) trajectory using screw motion interpolation between two poses.
+
+- **Parameters**: `xstart` - Initial pose (4×4 transformation matrix), `xend` - Final pose, `tf` - Total time, `n` - Number of trajectory points, `method` - Time scaling method
+- **Returns**: Vector of transformation matrices along the screw trajectory
+- **Location**: `src/trajectory_generation.rs:59`
+
+#### `cartesian_trajectory(xstart: &Matrix4<f64>, xend: &Matrix4<f64>, tf: f64, n: usize, method: Method) -> Vec<Matrix4<f64>>`
+
+Generates a Cartesian trajectory with decoupled rotation and translation interpolation.
+
+- **Parameters**: `xstart` - Initial pose (4×4 transformation matrix), `xend` - Final pose, `tf` - Total time, `n` - Number of trajectory points, `method` - Time scaling method
+- **Returns**: Vector of transformation matrices along the Cartesian trajectory
+- **Location**: `src/trajectory_generation.rs:88`
 
 ### Velocity Kinematics (`velocity_kinematics_and_statics` module)
 
@@ -520,8 +567,8 @@ The project includes comprehensive tests covering:
 - Forward kinematics for both body and space frames
 - Inverse kinematics using Newton-Raphson method
 - Jacobian calculations for velocity kinematics
-- Robot dynamics including inverse dynamics and mass matrix computation
-- Trajectory generation with time scaling functions
+- Robot dynamics including inverse dynamics and mass matrix computation  
+- Comprehensive trajectory generation including time scaling functions and multiple trajectory types
 - Numerical precision and edge cases
 
 Run tests with:
@@ -581,6 +628,9 @@ cargo test
 #### Trajectory Generation Tests (`test_trajectory_generation.rs`)
 - **`test_cubic_time_scaling`**: Tests cubic polynomial time scaling for smooth trajectory generation
 - **`test_qintic_time_scaling`**: Tests quintic polynomial time scaling for smooth trajectory generation with zero acceleration endpoints
+- **`test_joint_trajectory`**: Tests joint space trajectory generation with cubic time scaling
+- **`test_screw_trajectory`**: Tests screw motion trajectory generation for smooth SE(3) interpolation
+- **`test_cartesian_trajectory`**: Tests Cartesian trajectory generation with decoupled rotation and translation
 
 ## Constants
 

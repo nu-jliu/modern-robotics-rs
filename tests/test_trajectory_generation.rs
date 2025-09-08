@@ -1,7 +1,7 @@
 use assert_float_eq::assert_float_absolute_eq;
 use modern_robotics;
 
-const TOLERANCE: f64 = 1e-6;
+const TOLERANCE: f64 = 1e-4;
 
 #[test]
 fn test_cubic_time_scaling() {
@@ -82,4 +82,186 @@ fn test_joint_trajectory() {
     assert_float_absolute_eq!(traj[5][5], 2.0, TOLERANCE);
     assert_float_absolute_eq!(traj[5][6], 0.9, TOLERANCE);
     assert_float_absolute_eq!(traj[5][7], 1.0, TOLERANCE);
+}
+
+#[test]
+fn test_screw_trajectory() {
+    let xstart = nalgebra::matrix![
+        1.0, 0.0, 0.0, 1.0;
+        0.0, 1.0, 0.0, 0.0;
+        0.0, 0.0, 1.0, 1.0;
+        0.0, 0.0, 0.0, 1.0
+    ];
+    let xend = nalgebra::matrix![
+        0.0, 0.0, 1.0, 0.1;
+        1.0, 0.0, 0.0, 0.0;
+        0.0, 1.0, 0.0, 4.1;
+        0.0, 0.0, 0.0, 1.0
+    ];
+    let tf = 5.0;
+    let n = 4;
+    let method = modern_robotics::Method::Cubic;
+
+    let traj = modern_robotics::screw_trajectory(&xstart, &xend, tf, n, method);
+
+    assert!(traj.len() == 4);
+
+    assert_float_absolute_eq!(traj[0][(0, 0)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(0, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(0, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(0, 3)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(1, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(1, 1)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(1, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(1, 3)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(2, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(2, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(2, 2)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(2, 3)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(3, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(3, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(3, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(3, 3)], 1.0, TOLERANCE);
+
+    assert_float_absolute_eq!(traj[1][(0, 0)], 0.9041, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(0, 1)], -0.2504, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(0, 2)], 0.3463, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(0, 3)], 0.4410, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(1, 0)], 0.3463, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(1, 1)], 0.9041, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(1, 2)], -0.2504, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(1, 3)], 0.5287, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(2, 0)], -0.2504, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(2, 1)], 0.3463, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(2, 2)], 0.9041, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(2, 3)], 1.6007, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(3, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(3, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(3, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(3, 3)], 1.0, TOLERANCE);
+
+    assert_float_absolute_eq!(traj[2][(0, 0)], 0.3463, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(0, 1)], -0.2504, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(0, 2)], 0.9041, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(0, 3)], -0.1171, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(1, 0)], 0.9041, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(1, 1)], 0.3463, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(1, 2)], -0.2504, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(1, 3)], 0.4727, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(2, 0)], -0.2504, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(2, 1)], 0.9041, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(2, 2)], 0.3463, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(2, 3)], 3.2740, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(3, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(3, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(3, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(3, 3)], 1.0, TOLERANCE);
+
+    assert_float_absolute_eq!(traj[3][(0, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(0, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(0, 2)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(0, 3)], 0.1, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(1, 0)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(1, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(1, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(1, 3)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(2, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(2, 1)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(2, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(2, 3)], 4.1, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(3, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(3, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(3, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(3, 3)], 1.0, TOLERANCE);
+}
+
+#[test]
+fn test_cartesian_trajectory() {
+    let xstart = nalgebra::matrix![
+        1.0, 0.0, 0.0, 1.0;
+        0.0, 1.0, 0.0, 0.0;
+        0.0, 0.0, 1.0, 1.0;
+        0.0, 0.0, 0.0, 1.0
+    ];
+    let xend = nalgebra::matrix![
+        0.0, 0.0, 1.0, 0.1;
+        1.0, 0.0, 0.0, 0.0;
+        0.0, 1.0, 0.0, 4.1;
+        0.0, 0.0, 0.0, 1.0
+    ];
+    let tf = 5.0;
+    let n = 4;
+    let method = modern_robotics::Method::Quintic;
+
+    let traj = modern_robotics::cartesian_trajectory(&xstart, &xend, tf, n, method);
+
+    assert!(traj.len() == 4);
+
+    assert_float_absolute_eq!(traj[0][(0, 0)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(0, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(0, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(0, 3)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(1, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(1, 1)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(1, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(1, 3)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(2, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(2, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(2, 2)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(2, 3)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(3, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(3, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(3, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[0][(3, 3)], 1.0, TOLERANCE);
+
+    assert_float_absolute_eq!(traj[1][(0, 0)], 0.9366, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(0, 1)], -0.2140, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(0, 2)], 0.2774, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(0, 3)], 0.8111, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(1, 0)], 0.2774, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(1, 1)], 0.9366, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(1, 2)], -0.2140, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(1, 3)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(2, 0)], -0.2140, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(2, 1)], 0.2774, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(2, 2)], 0.9366, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(2, 3)], 1.6506, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(3, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(3, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(3, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[1][(3, 3)], 1.0, TOLERANCE);
+
+    assert_float_absolute_eq!(traj[2][(0, 0)], 0.2774, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(0, 1)], -0.2140, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(0, 2)], 0.9366, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(0, 3)], 0.2889, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(1, 0)], 0.9366, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(1, 1)], 0.2774, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(1, 2)], -0.2140, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(1, 3)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(2, 0)], -0.2140, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(2, 1)], 0.9366, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(2, 2)], 0.2774, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(2, 3)], 3.4494, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(3, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(3, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(3, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[2][(3, 3)], 1.0, TOLERANCE);
+
+    assert_float_absolute_eq!(traj[3][(0, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(0, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(0, 2)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(0, 3)], 0.1, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(1, 0)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(1, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(1, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(1, 3)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(2, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(2, 1)], 1.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(2, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(2, 3)], 4.1, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(3, 0)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(3, 1)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(3, 2)], 0.0, TOLERANCE);
+    assert_float_absolute_eq!(traj[3][(3, 3)], 1.0, TOLERANCE);
 }

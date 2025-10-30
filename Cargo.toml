@@ -1,8 +1,14 @@
 [package]
-edition = "2024"
 name = "modern-robotics"
-readme = "README.md"
 version = "0.1.2"
+edition = "2024"
+authors = ["Jingkun Liu"]
+license = "MIT"
+description = "A comprehensive Rust implementation of fundamental robotics algorithms based on modern robotics principles"
+readme = "README.md"
+repository = "https://github.com/nu-jliu/modern-robotics-rs"
+keywords = ["robotics", "kinematics", "dynamics", "trajectory", "control"]
+categories = ["science", "algorithms"]
 
 [dependencies]
 assert_float_eq = "1.1.4"
@@ -35,3 +41,11 @@ path = "tests/test_dynamics_of_open_chains.rs"
 [[test]]
 name = "test_trajectory_generation"
 path = "tests/test_trajectory_generation.rs"
+
+[[test]]
+name = "test_robot_control"
+path = "tests/test_robot_control.rs"
+
+[[test]]
+name = "test_velocity_kinematics_and_statics"
+path = "tests/test_velocity_kinematics_and_statics.rs"

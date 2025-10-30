@@ -8,7 +8,7 @@ A comprehensive Rust implementation of fundamental robotics algorithms and utili
 
 ## Overview
 
-This library provides essential mathematical utilities commonly used in robotics applications, with a focus on rigid body motions, SO(3) and SE(3) operations, forward and inverse kinematics, robot dynamics, trajectory generation, and numerical computations. The implementation leverages the `nalgebra` linear algebra library for efficient mathematical operations and follows modern robotics theory.
+This library provides essential mathematical utilities commonly used in robotics applications, with a focus on rigid body motions, SO(3) and SE(3) operations, forward and inverse kinematics, robot dynamics, trajectory generation, robot control, and numerical computations. The implementation leverages the `nalgebra` linear algebra library for efficient mathematical operations and follows modern robotics theory.
 
 ## Features
 
@@ -22,6 +22,7 @@ This library provides essential mathematical utilities commonly used in robotics
 - **Velocity Kinematics**: Jacobian calculations for both body and space frames
 - **Dynamics of Open Chains**: Robot dynamics calculations including inverse dynamics, forward dynamics, mass matrix computation, gravity forces, and trajectory simulation
 - **Trajectory Generation**: Complete trajectory generation system including cubic and quintic time scaling, joint space trajectories, screw motion trajectories, and Cartesian space trajectories
+- **Robot Control**: Computed torque control with PID feedback and feedforward dynamics compensation
 - **Numerical Tolerance Checking**: Check if values are near zero within a specified tolerance
 - **Vector Normalization**: Normalize vectors to unit length using nalgebra's DVector
 - **Robust Testing**: Comprehensive test suite covering all mathematical operations
@@ -183,6 +184,25 @@ let cartesian_traj = cartesian_trajectory(&xstart, &xend, tf, n, Method::Cubic);
 // Adjoint representation of twist
 let twist = Vector6::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
 let ad_twist = ad(&twist);
+
+// Robot control with computed torque and PID feedback
+let thetalist = DVector::from_vec(vec![0.1, 0.2, 0.3]); // Current joint angles
+let dthetalist = DVector::from_vec(vec![0.1, 0.2, 0.3]); // Current joint velocities
+let eint = DVector::from_vec(vec![0.0, 0.0, 0.0]); // Integrated error
+let g = Vector3::new(0.0, 0.0, -9.8); // Gravity vector
+
+let thetalistd = DVector::from_vec(vec![0.5, 0.6, 0.7]); // Desired joint angles
+let dthetalistd = DVector::from_vec(vec![0.0, 0.0, 0.0]); // Desired joint velocities
+let ddthetalistd = DVector::from_vec(vec![0.0, 0.0, 0.0]); // Desired joint accelerations
+
+let kp = 20.0; // Proportional gain
+let ki = 10.0; // Integral gain
+let kd = 15.0; // Derivative gain
+
+let control_torque = compute_torque(
+    &thetalist, &dthetalist, &eint, &g, &mlist, &glist, &slist,
+    &thetalistd, &dthetalistd, &ddthetalistd, kp, ki, kd
+);
 ```
 
 ## API Reference
@@ -506,6 +526,35 @@ Generates a Cartesian trajectory with decoupled rotation and translation interpo
 - **Returns**: Vector of transformation matrices along the Cartesian trajectory
 - **Location**: `src/trajectory_generation.rs:88`
 
+### Robot Control (`robot_control` module)
+
+#### `compute_torque(thetalist, dthetalist, eint, g, mlist, glist, slist, thetalistd, dthetalistd, ddthetalistd, kp, ki, kd) -> DVector<f64>`
+
+Computes the required joint torques for robot control using computed torque control with PID feedback.
+
+This function implements a model-based control law that combines feedforward dynamics compensation with PID feedback control. The control law is:
+
+τ = M(θ)[Kp·e + Ki·∫e + Kd·ė] + InverseDynamics(θ, dθ, d²θd)
+
+where e = θd - θ is the position error.
+
+- **Parameters**:
+  - `thetalist` - Current joint angles
+  - `dthetalist` - Current joint velocities
+  - `eint` - Integrated position error
+  - `g` - Gravity vector
+  - `mlist` - Link transformations
+  - `glist` - Link inertia matrices
+  - `slist` - Space screw axes
+  - `thetalistd` - Desired joint angles
+  - `dthetalistd` - Desired joint velocities
+  - `ddthetalistd` - Desired joint accelerations
+  - `kp` - Proportional gain
+  - `ki` - Integral gain
+  - `kd` - Derivative gain
+- **Returns**: Vector of computed joint torques
+- **Location**: `src/robot_control.rs:5`
+
 ### Velocity Kinematics (`velocity_kinematics_and_statics` module)
 
 #### `jacobian_body(blist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix6xX<f64>`
@@ -539,7 +588,8 @@ modern-robotics-rs/
 │   ├── inverse_kinematics.rs                      # Inverse kinematics calculations
 │   ├── velocity_kinematics_and_statics.rs         # Jacobian and velocity kinematics
 │   ├── dynamics_of_open_chains.rs                 # Robot dynamics calculations
-│   └── trajectory_generation.rs                   # Time scaling for trajectory generation
+│   ├── trajectory_generation.rs                   # Time scaling for trajectory generation
+│   └── robot_control.rs                           # Computed torque control with PID feedback
 ├── tests/
 │   ├── test_utils.rs                              # Tests for utility functions
 │   ├── test_rigid_body_motions.rs                 # Tests for rigid body motion functions
@@ -547,7 +597,8 @@ modern-robotics-rs/
 │   ├── test_inverse_kinematics.rs                 # Tests for inverse kinematics
 │   ├── test_velocity_kinematics_and_statics.rs    # Tests for velocity kinematics
 │   ├── test_dynamics_of_open_chains.rs            # Tests for dynamics calculations
-│   └── test_trajectory_generation.rs              # Tests for trajectory generation
+│   ├── test_trajectory_generation.rs              # Tests for trajectory generation
+│   └── test_robot_control.rs                      # Tests for robot control algorithms
 ├── target/                                        # Build artifacts (generated)
 ├── Cargo.toml                                     # Package configuration
 ├── Cargo.lock                                     # Dependency lock file
@@ -567,8 +618,9 @@ The project includes comprehensive tests covering:
 - Forward kinematics for both body and space frames
 - Inverse kinematics using Newton-Raphson method
 - Jacobian calculations for velocity kinematics
-- Robot dynamics including inverse dynamics and mass matrix computation  
+- Robot dynamics including inverse dynamics and mass matrix computation
 - Comprehensive trajectory generation including time scaling functions and multiple trajectory types
+- Robot control with computed torque and PID feedback
 - Numerical precision and edge cases
 
 Run tests with:
@@ -632,6 +684,9 @@ cargo test
 - **`test_screw_trajectory`**: Tests screw motion trajectory generation for smooth SE(3) interpolation
 - **`test_cartesian_trajectory`**: Tests Cartesian trajectory generation with decoupled rotation and translation
 
+#### Robot Control Tests (`test_robot_control.rs`)
+- **`test_compute_torque`**: Tests computed torque control algorithm with PID feedback for trajectory tracking
+
 ## Constants
 
 - **`TOLERANCE`**: 1e-6 - The threshold used for near-zero comparisons
@@ -676,7 +731,9 @@ cargo doc --open
 
 ## License
 
-This project follows standard Rust packaging conventions. Check the repository for specific license information.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2025 Jingkun Liu
 
 ## Contributing
 
@@ -686,12 +743,15 @@ This library serves as a foundation for robotics applications in Rust. Contribut
 
 Potential areas for expansion include:
 - Quaternion operations and conversions
-- Advanced trajectory planning algorithms
+- Advanced trajectory planning algorithms (RRT, RRT*, PRM)
 - Additional Lie group operations
-- Path planning utilities
+- Path planning utilities with obstacle avoidance
 - Support for different robot configurations (parallel robots, mobile robots)
 - Integration with robot simulation frameworks
 - Optimization-based inverse kinematics solvers
-- Robot control algorithms and closed-loop dynamics
+- Advanced control algorithms (impedance control, force control, adaptive control)
+- State estimation and filtering (Kalman filters, particle filters)
 - Support for flexible joints and link compliance
 - Multi-body system dynamics
+- Real-time performance optimization
+- Hardware interfacing and communication protocols

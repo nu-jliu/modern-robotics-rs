@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["fkin_body","fkin_space"]};

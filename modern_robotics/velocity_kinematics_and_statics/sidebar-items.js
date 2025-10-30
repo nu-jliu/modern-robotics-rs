@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["jacobian_body","jacobian_space"]};

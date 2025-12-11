@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["TOLERANCE"],"fn":["near_zero","normalize"]};

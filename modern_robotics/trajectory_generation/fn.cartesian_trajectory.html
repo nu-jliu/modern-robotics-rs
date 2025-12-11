@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Computes a trajectory as a list of N SE(3) matrices with Cartesian motion."><title>cartesian_trajectory in modern_robotics::trajectory_generation - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-e56847b5.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="modern_robotics" data-themes="" data-resource-suffix="" data-rustdoc-version="1.91.1 (ed61e7d7e 2025-11-07)" data-channel="1.91.1" data-search-js="search-e256b49e.js" data-stringdex-js="stringdex-c3e638e9.js" data-settings-js="settings-c38705f0.js" ><script src="../../static.files/storage-e2aeef58.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-6dc2a7f3.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">cartesian_trajectory</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../modern_robotics/index.html">modern_<wbr>robotics</a><span class="version">0.1.2</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">cartesian_<wbr>trajectory</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#arguments" title="Arguments">Arguments</a></li><li><a href="#returns" title="Returns">Returns</a></li><li><a href="#example" title="Example">Example</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In modern_<wbr>robotics::<wbr>trajectory_<wbr>generation</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">modern_robotics</a>::<wbr><a href="index.html">trajectory_generation</a></div><h1>Function <span class="fn">cartesian_<wbr>trajectory</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/modern_robotics/trajectory_generation.rs.html#257-290">Source</a> </span></div><pre class="rust item-decl"><code>pub fn cartesian_trajectory(
+    xstart: &amp;<a class="type" href="https://docs.rs/nalgebra/0.25.0/nalgebra/base/alias/type.Matrix4.html" title="type nalgebra::base::alias::Matrix4">Matrix4</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.91.1/std/primitive.f64.html">f64</a>&gt;,
+    xend: &amp;<a class="type" href="https://docs.rs/nalgebra/0.25.0/nalgebra/base/alias/type.Matrix4.html" title="type nalgebra::base::alias::Matrix4">Matrix4</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.91.1/std/primitive.f64.html">f64</a>&gt;,
+    tf: <a class="primitive" href="https://doc.rust-lang.org/1.91.1/std/primitive.f64.html">f64</a>,
+    n: <a class="primitive" href="https://doc.rust-lang.org/1.91.1/std/primitive.usize.html">usize</a>,
+    method: <a class="enum" href="../enum.Method.html" title="enum modern_robotics::Method">Method</a>,
+) -&gt; <a class="struct" href="https://doc.rust-lang.org/1.91.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="type" href="https://docs.rs/nalgebra/0.25.0/nalgebra/base/alias/type.Matrix4.html" title="type nalgebra::base::alias::Matrix4">Matrix4</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.91.1/std/primitive.f64.html">f64</a>&gt;&gt; <a href="#" class="tooltip" data-notable-ty="Vec&lt;Matrix4&lt;f64&gt;&gt;">ⓘ</a></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Computes a trajectory as a list of N SE(3) matrices with Cartesian motion.</p>
+<h2 id="arguments"><a class="doc-anchor" href="#arguments">§</a>Arguments</h2>
+<ul>
+<li><code>xstart</code> - The initial end-effector configuration</li>
+<li><code>xend</code> - The final end-effector configuration</li>
+<li><code>tf</code> - Total time of the motion in seconds from rest to rest</li>
+<li><code>n</code> - The number of points N &gt; 1 (Start and stop) in the discrete
+representation of the trajectory</li>
+<li><code>method</code> - The time-scaling method, where Method::Cubic uses a third-order
+polynomial and Method::Quintic uses a fifth-order polynomial</li>
+</ul>
+<h2 id="returns"><a class="doc-anchor" href="#returns">§</a>Returns</h2>
+<p>The discretized trajectory as a list of N matrices in SE(3) separated in
+time by Tf/(N-1). The first point is Xstart and the Nth point is Xend.</p>
+<p>This function is similar to ScrewTrajectory, except the origin of the
+end-effector frame follows a straight line, decoupled from the rotational
+motion.</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>nalgebra::Matrix4;
+<span class="kw">use </span>modern_robotics::{cartesian_trajectory, Method};
+
+<span class="kw">let </span>xstart = Matrix4::new(
+    <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>,
+    <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>,
+    <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">1.0</span>,
+    <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0
+</span>);
+<span class="kw">let </span>xend = Matrix4::new(
+    <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.1</span>,
+    <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>,
+    <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">4.1</span>,
+    <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0
+</span>);
+<span class="kw">let </span>tf = <span class="number">5.0</span>;
+<span class="kw">let </span>n = <span class="number">4</span>;
+<span class="kw">let </span>method = Method::Quintic;
+<span class="kw">let </span>traj = cartesian_trajectory(<span class="kw-2">&amp;</span>xstart, <span class="kw-2">&amp;</span>xend, tf, n, method);</code></pre></div></div></details><script type="text/json" id="notable-traits-data">{"Vec<Matrix4<f64>>":"<h3>Notable traits for <code><a class=\"struct\" href=\"https://doc.rust-lang.org/1.91.1/alloc/vec/struct.Vec.html\" title=\"struct alloc::vec::Vec\">Vec</a>&lt;<a class=\"primitive\" href=\"https://doc.rust-lang.org/1.91.1/std/primitive.u8.html\">u8</a>, A&gt;</code></h3><pre><code><div class=\"where\">impl&lt;A&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.1/std/io/trait.Write.html\" title=\"trait std::io::Write\">Write</a> for <a class=\"struct\" href=\"https://doc.rust-lang.org/1.91.1/alloc/vec/struct.Vec.html\" title=\"struct alloc::vec::Vec\">Vec</a>&lt;<a class=\"primitive\" href=\"https://doc.rust-lang.org/1.91.1/std/primitive.u8.html\">u8</a>, A&gt;<div class=\"where\">where\n    A: <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.1/core/alloc/trait.Allocator.html\" title=\"trait core::alloc::Allocator\">Allocator</a>,</div></div>"}</script></section></div></main></body></html>

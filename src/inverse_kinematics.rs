@@ -5,6 +5,60 @@ use crate::{
     trans_inv,
 };
 
+/// Computes inverse kinematics in the body frame for an open chain robot.
+///
+/// # Arguments
+///
+/// * `blist` - The joint screw axes in the end-effector frame when the
+///   manipulator is at the home position
+/// * `m` - The home configuration of the end-effector
+/// * `t` - The desired end-effector configuration T
+/// * `thetalist0` - An initial guess of joint angles that are close to satisfying T
+/// * `emog` - A small positive tolerance on the end-effector orientation error.
+///   The returned joint angles must give an end-effector orientation error
+///   less than emog
+/// * `ev` - A small positive tolerance on the end-effector linear position error.
+///   The returned joint angles must give an end-effector position error less
+///   than ev
+///
+/// # Returns
+///
+/// A tuple containing:
+/// * Joint angles that achieve T within the specified tolerances
+/// * A boolean indicating whether the algorithm converged (true) or ran for the
+///   maximum number of iterations without converging (false)
+///
+/// Uses an iterative Newton-Raphson root-finding method. The maximum number of
+/// iterations before the algorithm is terminated has been hardcoded.
+///
+/// # Example
+///
+/// ```
+/// use nalgebra::{Matrix4, Vector6, DVector};
+/// use modern_robotics::ikin_body;
+///
+/// let blist = vec![
+///     Vector6::new(0.0, 0.0, -1.0, 2.0, 0.0, 0.0),
+///     Vector6::new(0.0, 0.0, 0.0, 0.0, 1.0, 0.0),
+///     Vector6::new(0.0, 0.0, 1.0, 0.0, 0.0, 0.1)
+/// ];
+/// let m = Matrix4::new(
+///     -1.0, 0.0,  0.0, 0.0,
+///      0.0, 1.0,  0.0, 6.0,
+///      0.0, 0.0, -1.0, 2.0,
+///      0.0, 0.0,  0.0, 1.0
+/// );
+/// let t = Matrix4::new(
+///      0.0, 1.0,  0.0,     -5.0,
+///      1.0, 0.0,  0.0,      4.0,
+///      0.0, 0.0, -1.0,      1.6,
+///      0.0, 0.0,  0.0,      1.0
+/// );
+/// let thetalist0 = DVector::from_vec(vec![1.5, 2.5, 3.0]);
+/// let emog = 0.01;
+/// let ev = 0.001;
+/// let (thetalist, success) = ikin_body(&blist, &m, &t, &thetalist0, emog, ev);
+/// ```
 pub fn ikin_body(
     blist: &Vec<nalgebra::Vector6<f64>>,
     m: &nalgebra::Matrix4<f64>,
@@ -45,6 +99,60 @@ pub fn ikin_body(
     return (thetalist, !err);
 }
 
+/// Computes inverse kinematics in the space frame for an open chain robot.
+///
+/// # Arguments
+///
+/// * `slist` - The joint screw axes in the space frame when the manipulator
+///   is at the home position
+/// * `m` - The home configuration of the end-effector
+/// * `t` - The desired end-effector configuration T
+/// * `thetalist0` - An initial guess of joint angles that are close to satisfying T
+/// * `emog` - A small positive tolerance on the end-effector orientation error.
+///   The returned joint angles must give an end-effector orientation error
+///   less than emog
+/// * `ev` - A small positive tolerance on the end-effector linear position error.
+///   The returned joint angles must give an end-effector position error less
+///   than ev
+///
+/// # Returns
+///
+/// A tuple containing:
+/// * Joint angles that achieve T within the specified tolerances
+/// * A boolean indicating whether the algorithm converged (true) or ran for the
+///   maximum number of iterations without converging (false)
+///
+/// Uses an iterative Newton-Raphson root-finding method. The maximum number of
+/// iterations before the algorithm is terminated has been hardcoded.
+///
+/// # Example
+///
+/// ```
+/// use nalgebra::{Matrix4, Vector6, DVector};
+/// use modern_robotics::ikin_space;
+///
+/// let slist = vec![
+///     Vector6::new(0.0, 0.0, 1.0, 4.0, 0.0, 0.0),
+///     Vector6::new(0.0, 0.0, 0.0, 0.0, 1.0, 0.0),
+///     Vector6::new(0.0, 0.0, -1.0, -6.0, 0.0, -0.1)
+/// ];
+/// let m = Matrix4::new(
+///     -1.0, 0.0,  0.0, 0.0,
+///      0.0, 1.0,  0.0, 6.0,
+///      0.0, 0.0, -1.0, 2.0,
+///      0.0, 0.0,  0.0, 1.0
+/// );
+/// let t = Matrix4::new(
+///      0.0, 1.0,  0.0,     -5.0,
+///      1.0, 0.0,  0.0,      4.0,
+///      0.0, 0.0, -1.0,      1.6,
+///      0.0, 0.0,  0.0,      1.0
+/// );
+/// let thetalist0 = DVector::from_vec(vec![1.5, 2.5, 3.0]);
+/// let emog = 0.01;
+/// let ev = 0.001;
+/// let (thetalist, success) = ikin_space(&slist, &m, &t, &thetalist0, emog, ev);
+/// ```
 pub fn ikin_space(
     slist: &Vec<nalgebra::Vector6<f64>>,
     m: &nalgebra::Matrix4<f64>,

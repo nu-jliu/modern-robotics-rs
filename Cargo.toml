@@ -1,7 +1,7 @@
 [package]
 name = "modern-robotics"
 version = "0.1.2"
-edition = "2024"
+edition = "2021"
 authors = ["Jingkun Liu"]
 license = "MIT"
 description = "A comprehensive Rust implementation of fundamental robotics algorithms based on modern robotics principles"
@@ -11,8 +11,10 @@ keywords = ["robotics", "kinematics", "dynamics", "trajectory", "control"]
 categories = ["science", "algorithms"]
 
 [dependencies]
-assert_float_eq = "1.1.4"
 nalgebra = "0.34.0"
+
+[dev-dependencies]
+assert_float_eq = "1.1.4"
 
 [lib]
 name = "modern_robotics"

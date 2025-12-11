@@ -30,6 +30,9 @@ This library provides essential mathematical utilities commonly used in robotics
 ## Dependencies
 
 - `nalgebra` (v0.34.0) - Linear algebra library for Rust
+
+## Dev Dependencies
+
 - `assert_float_eq` (v1.1.4) - Floating point assertions for testing
 
 ## Installation
@@ -53,70 +56,70 @@ let not_zero = near_zero(1e-5); // false
 
 // Normalize a vector
 let v = DVector::from_vec(vec![3.0, 4.0]);
-let normalized = normalize(v);
+let normalized = normalize(&v);
 // Result: [0.6, 0.8] (unit vector)
 
 // SO(3) operations
 let omega = Vector3::new(1.0, 2.0, 3.0);
 
 // Convert vector to skew-symmetric matrix
-let so3_matrix = vec_to_so3(omega);
+let so3_matrix = vec_to_so3(&omega);
 
 // Matrix exponential (Rodrigues' rotation formula)
-let rotation_matrix = matrix_exp3(so3_matrix);
+let rotation_matrix = matrix_exp3(&so3_matrix);
 
 // Matrix logarithm
-let so3_log = matrix_log3(rotation_matrix);
+let so3_log = matrix_log3(&rotation_matrix);
 
 // Convert exponential coordinates to axis-angle
-let (axis, angle) = axis_ang3(omega);
+let (axis, angle) = axis_ang3(&omega);
 
 // SE(3) operations
 let r = Matrix3::identity();
 let p = Vector3::new(1.0, 2.0, 3.0);
 
 // Create homogeneous transformation matrix
-let transform = rp_to_trans(r, p);
+let transform = rp_to_trans(&r, &p);
 
 // Extract rotation and translation
-let (rotation, translation) = trans_to_rp(transform);
+let (rotation, translation) = trans_to_rp(&transform);
 
 // Transform inverse
-let transform_inv = trans_inv(transform);
+let transform_inv = trans_inv(&transform);
 
 // SE(3) vector and matrix conversions
 let twist = Vector6::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
-let se3_matrix = vec_to_se3(twist);
-let twist_back = se3_to_vec(se3_matrix);
+let se3_matrix = vec_to_se3(&twist);
+let twist_back = se3_to_vec(&se3_matrix);
 
 // SE(3) matrix exponential and logarithm
-let transform_exp = matrix_exp6(se3_matrix);
-let se3_log = matrix_log6(transform_exp);
+let transform_exp = matrix_exp6(&se3_matrix);
+let se3_log = matrix_log6(&transform_exp);
 
 // Adjoint representation
-let adj_t = adjoint(transform);
+let adj_t = adjoint(&transform);
 
 // Screw axis from point, direction, and pitch
 let q = Vector3::new(0.0, 0.0, 0.0);
 let s = Vector3::new(0.0, 0.0, 1.0);
 let h = 1.0;
-let screw_axis = screw_to_axis(q, s, h);
+let screw_axis = screw_to_axis(&q, &s, h);
 
 // SE(3) axis-angle representation
-let (screw_axis_unit, theta) = axis_ang6(twist);
+let (screw_axis_unit, theta) = axis_ang6(&twist);
 
 // Forward kinematics
 let m = Matrix4::identity(); // End-effector configuration at zero position
 let blist = vec![Vector6::new(0.0, 0.0, 1.0, 0.0, 0.0, 0.0)]; // Body screw axes
-let thetalist = vec![1.57]; // Joint angles in radians
-let t_body = fkin_body(m, blist.clone(), thetalist.clone());
+let thetalist = DVector::from_vec(vec![1.57]); // Joint angles in radians
+let t_body = fkin_body(&m, &blist, &thetalist);
 
 let slist = vec![Vector6::new(0.0, 0.0, 1.0, 0.0, 0.0, 0.0)]; // Space screw axes
-let t_space = fkin_space(m, slist.clone(), thetalist.clone());
+let t_space = fkin_space(&m, &slist, &thetalist);
 
 // Jacobian calculations
-let jb = jacobian_body(blist, thetalist.clone());
-let js = jacobian_space(slist, thetalist.clone());
+let jb = jacobian_body(&blist, &thetalist);
+let js = jacobian_space(&slist, &thetalist);
 
 // Inverse kinematics
 use nalgebra::DVector;
@@ -168,28 +171,28 @@ let s_quintic = quintic_time_scaling(tf, t); // Quintic polynomial scaling
 // Joint space trajectory generation
 let thetastart = DVector::from_vec(vec![0.0, 0.0, 0.0]);
 let thetaend = DVector::from_vec(vec![1.57, 1.0, 0.5]);
-let tf = 5.0; // Total time
+let tf_traj = 5.0; // Total time
 let n = 10; // Number of trajectory points
 let method = Method::Cubic; // or Method::Quintic
-let joint_traj = joint_trajectory(&thetastart, &thetaend, tf, n, method);
+let joint_traj = joint_trajectory(&thetastart, &thetaend, tf_traj, n, method);
 
 // Screw motion trajectory (smooth SE(3) interpolation)
 let xstart = Matrix4::identity(); // Starting pose
-let xend = rp_to_trans(rotation_matrix, Vector3::new(1.0, 2.0, 3.0)); // End pose
-let screw_traj = screw_trajectory(&xstart, &xend, tf, n, Method::Quintic);
+let xend = rp_to_trans(&rotation_matrix, &Vector3::new(1.0, 2.0, 3.0)); // End pose
+let screw_traj = screw_trajectory(&xstart, &xend, tf_traj, n, Method::Quintic);
 
 // Cartesian trajectory (decoupled rotation and translation)
-let cartesian_traj = cartesian_trajectory(&xstart, &xend, tf, n, Method::Cubic);
+let cartesian_traj = cartesian_trajectory(&xstart, &xend, tf_traj, n, Method::Cubic);
 
 // Adjoint representation of twist
-let twist = Vector6::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
-let ad_twist = ad(&twist);
+let twist_ad = Vector6::new(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
+let ad_twist = ad(&twist_ad);
 
 // Robot control with computed torque and PID feedback
-let thetalist = DVector::from_vec(vec![0.1, 0.2, 0.3]); // Current joint angles
-let dthetalist = DVector::from_vec(vec![0.1, 0.2, 0.3]); // Current joint velocities
+let thetalist_ctrl = DVector::from_vec(vec![0.1, 0.2, 0.3]); // Current joint angles
+let dthetalist_ctrl = DVector::from_vec(vec![0.1, 0.2, 0.3]); // Current joint velocities
 let eint = DVector::from_vec(vec![0.0, 0.0, 0.0]); // Integrated error
-let g = Vector3::new(0.0, 0.0, -9.8); // Gravity vector
+let g_ctrl = Vector3::new(0.0, 0.0, -9.8); // Gravity vector
 
 let thetalistd = DVector::from_vec(vec![0.5, 0.6, 0.7]); // Desired joint angles
 let dthetalistd = DVector::from_vec(vec![0.0, 0.0, 0.0]); // Desired joint velocities
@@ -200,7 +203,7 @@ let ki = 10.0; // Integral gain
 let kd = 15.0; // Derivative gain
 
 let control_torque = compute_torque(
-    &thetalist, &dthetalist, &eint, &g, &mlist, &glist, &slist,
+    &thetalist_ctrl, &dthetalist_ctrl, &eint, &g_ctrl, &mlist, &glist, &slist,
     &thetalistd, &dthetalistd, &ddthetalistd, kp, ki, kd
 );
 ```
@@ -217,11 +220,11 @@ Checks if a floating-point value is considered "near zero" within a predefined t
 - **Returns**: `true` if the value is less than the tolerance (1e-6), `false` otherwise
 - **Location**: `src/utils.rs:22`
 
-#### `normalize(v: nalgebra::DVector<f64>) -> nalgebra::DVector<f64>`
+#### `normalize(v: &nalgebra::DVector<f64>) -> nalgebra::DVector<f64>`
 
 Normalizes a vector to unit length.
 
-- **Parameters**: `v` - The input vector to normalize
+- **Parameters**: `v` - The input vector to normalize (by reference)
 - **Returns**: A new vector with the same direction but unit magnitude
 - **Location**: `src/utils.rs:45`
 
@@ -229,151 +232,151 @@ Normalizes a vector to unit length.
 
 #### SO(3) Operations
 
-#### `rot_inv(r: Matrix3<f64>) -> Matrix3<f64>`
+#### `rot_inv(r: &Matrix3<f64>) -> Matrix3<f64>`
 
 Computes the inverse of a rotation matrix (transpose).
 
-- **Parameters**: `r` - A 3×3 rotation matrix
+- **Parameters**: `r` - A 3×3 rotation matrix (by reference)
 - **Returns**: The inverse rotation matrix (transpose of input)
-- **Location**: `src/rigid_body_motions.rs:4`
+- **Location**: `src/rigid_body_motions.rs:27`
 
-#### `vec_to_so3(omg: Vector3<f64>) -> Matrix3<f64>`
+#### `vec_to_so3(omg: &Vector3<f64>) -> Matrix3<f64>`
 
 Converts a 3D vector to its skew-symmetric matrix representation.
 
-- **Parameters**: `omg` - A 3D vector [ωₓ, ωᵧ, ωᵤ]
+- **Parameters**: `omg` - A 3D vector [ωₓ, ωᵧ, ωᵤ] (by reference)
 - **Returns**: The corresponding 3×3 skew-symmetric matrix
-- **Location**: `src/rigid_body_motions.rs:8`
+- **Location**: `src/rigid_body_motions.rs:50`
 
-#### `so3_to_vec(so3mat: Matrix3<f64>) -> Vector3<f64>`
+#### `so3_to_vec(so3mat: &Matrix3<f64>) -> Vector3<f64>`
 
 Extracts a 3D vector from its skew-symmetric matrix representation.
 
-- **Parameters**: `so3mat` - A 3×3 skew-symmetric matrix
+- **Parameters**: `so3mat` - A 3×3 skew-symmetric matrix (by reference)
 - **Returns**: The corresponding 3D vector [ωₓ, ωᵧ, ωᵤ]
-- **Location**: `src/rigid_body_motions.rs:15`
+- **Location**: `src/rigid_body_motions.rs:82`
 
-#### `axis_ang3(expc3: Vector3<f64>) -> (Vector3<f64>, f64)`
+#### `axis_ang3(expc3: &Vector3<f64>) -> (Vector3<f64>, f64)`
 
 Converts exponential coordinates to axis-angle representation.
 
-- **Parameters**: `expc3` - Exponential coordinates (3D vector)
+- **Parameters**: `expc3` - Exponential coordinates (3D vector, by reference)
 - **Returns**: Tuple of (unit axis vector, rotation angle in radians)
-- **Location**: `src/rigid_body_motions.rs:20`
+- **Location**: `src/rigid_body_motions.rs:106`
 
-#### `matrix_exp3(so3mat: Matrix3<f64>) -> Matrix3<f64>`
+#### `matrix_exp3(so3mat: &Matrix3<f64>) -> Matrix3<f64>`
 
 Computes the matrix exponential for SO(3) using Rodrigues' rotation formula.
 
-- **Parameters**: `so3mat` - A 3×3 skew-symmetric matrix in so(3)
+- **Parameters**: `so3mat` - A 3×3 skew-symmetric matrix in so(3) (by reference)
 - **Returns**: The corresponding rotation matrix in SO(3)
-- **Location**: `src/rigid_body_motions.rs:30`
+- **Location**: `src/rigid_body_motions.rs:138`
 
-#### `matrix_log3(r: Matrix3<f64>) -> Matrix3<f64>`
+#### `matrix_log3(r: &Matrix3<f64>) -> Matrix3<f64>`
 
 Computes the matrix logarithm for SO(3), the inverse of matrix exponential.
 
-- **Parameters**: `r` - A 3×3 rotation matrix in SO(3)
+- **Parameters**: `r` - A 3×3 rotation matrix in SO(3) (by reference)
 - **Returns**: The corresponding skew-symmetric matrix in so(3)
-- **Location**: `src/rigid_body_motions.rs:41`
+- **Location**: `src/rigid_body_motions.rs:176`
 
 #### SE(3) Operations
 
-#### `rp_to_trans(r: Matrix3<f64>, p: Vector3<f64>) -> Matrix4<f64>`
+#### `rp_to_trans(r: &Matrix3<f64>, p: &Vector3<f64>) -> Matrix4<f64>`
 
 Converts rotation matrix and position vector to homogeneous transformation matrix.
 
-- **Parameters**: `r` - A 3×3 rotation matrix, `p` - A 3D position vector
+- **Parameters**: `r` - A 3×3 rotation matrix (by reference), `p` - A 3D position vector (by reference)
 - **Returns**: A 4×4 homogeneous transformation matrix
-- **Location**: `src/rigid_body_motions.rs:64`
+- **Location**: `src/rigid_body_motions.rs:226`
 
-#### `trans_to_rp(t: Matrix4<f64>) -> (Matrix3<f64>, Vector3<f64>)`
+#### `trans_to_rp(t: &Matrix4<f64>) -> (Matrix3<f64>, Vector3<f64>)`
 
 Extracts rotation matrix and position vector from homogeneous transformation matrix.
 
-- **Parameters**: `t` - A 4×4 homogeneous transformation matrix
+- **Parameters**: `t` - A 4×4 homogeneous transformation matrix (by reference)
 - **Returns**: Tuple of (rotation matrix, position vector)
-- **Location**: `src/rigid_body_motions.rs:70`
+- **Location**: `src/rigid_body_motions.rs:260`
 
-#### `trans_inv(t: Matrix4<f64>) -> Matrix4<f64>`
+#### `trans_inv(t: &Matrix4<f64>) -> Matrix4<f64>`
 
 Computes the inverse of a homogeneous transformation matrix.
 
-- **Parameters**: `t` - A 4×4 homogeneous transformation matrix
+- **Parameters**: `t` - A 4×4 homogeneous transformation matrix (by reference)
 - **Returns**: The inverse transformation matrix
-- **Location**: `src/rigid_body_motions.rs:86`
+- **Location**: `src/rigid_body_motions.rs:291`
 
-#### `vec_to_se3(v: Vector6<f64>) -> Matrix4<f64>`
+#### `vec_to_se3(v: &Vector6<f64>) -> Matrix4<f64>`
 
 Converts a 6D twist vector to its se(3) matrix representation.
 
-- **Parameters**: `v` - A 6D twist vector [ωₓ, ωᵧ, ωᵤ, vₓ, vᵧ, vᵤ]
+- **Parameters**: `v` - A 6D twist vector [ωₓ, ωᵧ, ωᵤ, vₓ, vᵧ, vᵤ] (by reference)
 - **Returns**: The corresponding 4×4 se(3) matrix
-- **Location**: `src/rigid_body_motions.rs:95`
+- **Location**: `src/rigid_body_motions.rs:321`
 
-#### `se3_to_vec(se3mat: Matrix4<f64>) -> Vector6<f64>`
+#### `se3_to_vec(se3mat: &Matrix4<f64>) -> Vector6<f64>`
 
 Extracts a 6D twist vector from its se(3) matrix representation.
 
-- **Parameters**: `se3mat` - A 4×4 se(3) matrix
+- **Parameters**: `se3mat` - A 4×4 se(3) matrix (by reference)
 - **Returns**: The corresponding 6D twist vector [ωₓ, ωᵧ, ωᵤ, vₓ, vᵧ, vᵤ]
-- **Location**: `src/rigid_body_motions.rs:104`
+- **Location**: `src/rigid_body_motions.rs:355`
 
-#### `adjoint(t: Matrix4<f64>) -> Matrix6<f64>`
+#### `adjoint(t: &Matrix4<f64>) -> Matrix6<f64>`
 
 Computes the adjoint representation of a homogeneous transformation matrix.
 
-- **Parameters**: `t` - A 4×4 homogeneous transformation matrix
+- **Parameters**: `t` - A 4×4 homogeneous transformation matrix (by reference)
 - **Returns**: The 6×6 adjoint matrix
-- **Location**: `src/rigid_body_motions.rs:115`
+- **Location**: `src/rigid_body_motions.rs:390`
 
-#### `screw_to_axis(q: Vector3<f64>, s: Vector3<f64>, h: f64) -> Vector6<f64>`
+#### `screw_to_axis(q: &Vector3<f64>, s: &Vector3<f64>, h: f64) -> Vector6<f64>`
 
 Converts screw axis parameters to a screw axis representation.
 
-- **Parameters**: `q` - A point on the screw axis, `s` - Unit direction vector, `h` - Pitch of the screw
+- **Parameters**: `q` - A point on the screw axis (by reference), `s` - Unit direction vector (by reference), `h` - Pitch of the screw
 - **Returns**: The 6D screw axis vector
-- **Location**: `src/rigid_body_motions.rs:122`
+- **Location**: `src/rigid_body_motions.rs:421`
 
-#### `axis_ang6(expc6: Vector6<f64>) -> (Vector6<f64>, f64)`
+#### `axis_ang6(expc6: &Vector6<f64>) -> (Vector6<f64>, f64)`
 
 Converts 6D exponential coordinates to axis-angle representation.
 
-- **Parameters**: `expc6` - 6D exponential coordinates (twist vector)
+- **Parameters**: `expc6` - 6D exponential coordinates (twist vector, by reference)
 - **Returns**: Tuple of (unit screw axis, rotation/translation magnitude)
-- **Location**: `src/rigid_body_motions.rs:132`
+- **Location**: `src/rigid_body_motions.rs:451`
 
-#### `matrix_exp6(se3mat: Matrix4<f64>) -> Matrix4<f64>`
+#### `matrix_exp6(se3mat: &Matrix4<f64>) -> Matrix4<f64>`
 
 Computes the matrix exponential for SE(3), converting a twist to a transformation matrix.
 
-- **Parameters**: `se3mat` - A 4×4 se(3) matrix representation of a twist
+- **Parameters**: `se3mat` - A 4×4 se(3) matrix representation of a twist (by reference)
 - **Returns**: The corresponding 4×4 homogeneous transformation matrix
-- **Location**: `src/rigid_body_motions.rs:142`
+- **Location**: `src/rigid_body_motions.rs:487`
 
-#### `matrix_log6(t: Matrix4<f64>) -> Matrix4<f64>`
+#### `matrix_log6(t: &Matrix4<f64>) -> Matrix4<f64>`
 
 Computes the matrix logarithm for SE(3), the inverse of matrix exponential.
 
-- **Parameters**: `t` - A 4×4 homogeneous transformation matrix
+- **Parameters**: `t` - A 4×4 homogeneous transformation matrix (by reference)
 - **Returns**: The corresponding 4×4 se(3) matrix representation
-- **Location**: `src/rigid_body_motions.rs:168`
+- **Location**: `src/rigid_body_motions.rs:540`
 
 ### Forward Kinematics (`forward_kinematics` module)
 
-#### `fkin_body(m: Matrix4<f64>, blist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix4<f64>`
+#### `fkin_body(m: &Matrix4<f64>, blist: &Vec<Vector6<f64>>, thetalist: &DVector<f64>) -> Matrix4<f64>`
 
 Computes forward kinematics using the body frame representation.
 
-- **Parameters**: `m` - End-effector configuration at zero position, `blist` - Body screw axes, `thetalist` - Joint angles
+- **Parameters**: `m` - End-effector configuration at zero position (by reference), `blist` - Body screw axes (by reference), `thetalist` - Joint angles (DVector, by reference)
 - **Returns**: The end-effector configuration
 - **Location**: `src/forward_kinematics.rs:5`
 
-#### `fkin_space(m: Matrix4<f64>, slist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix4<f64>`
+#### `fkin_space(m: &Matrix4<f64>, slist: &Vec<Vector6<f64>>, thetalist: &DVector<f64>) -> Matrix4<f64>`
 
 Computes forward kinematics using the space frame representation.
 
-- **Parameters**: `m` - End-effector configuration at zero position, `slist` - Space screw axes, `thetalist` - Joint angles
+- **Parameters**: `m` - End-effector configuration at zero position (by reference), `slist` - Space screw axes (by reference), `thetalist` - Joint angles (DVector, by reference)
 - **Returns**: The end-effector configuration
 - **Location**: `src/forward_kinematics.rs:23`
 
@@ -557,21 +560,21 @@ where e = θd - θ is the position error.
 
 ### Velocity Kinematics (`velocity_kinematics_and_statics` module)
 
-#### `jacobian_body(blist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix6xX<f64>`
+#### `jacobian_body(blist: &Vec<Vector6<f64>>, thetalist: &DVector<f64>) -> Matrix6xX<f64>`
 
 Computes the body Jacobian matrix.
 
-- **Parameters**: `blist` - Body screw axes, `thetalist` - Joint angles
+- **Parameters**: `blist` - Body screw axes (by reference), `thetalist` - Joint angles (DVector, by reference)
 - **Returns**: The 6×n body Jacobian matrix
 - **Location**: `src/velocity_kinematics_and_statics.rs:5`
 
-#### `jacobian_space(slist: Vec<Vector6<f64>>, thetalist: Vec<f64>) -> Matrix6xX<f64>`
+#### `jacobian_space(slist: &Vec<Vector6<f64>>, thetalist: &DVector<f64>) -> Matrix6xX<f64>`
 
 Computes the space Jacobian matrix.
 
-- **Parameters**: `slist` - Space screw axes, `thetalist` - Joint angles
+- **Parameters**: `slist` - Space screw axes (by reference), `thetalist` - Joint angles (DVector, by reference)
 - **Returns**: The 6×n space Jacobian matrix
-- **Location**: `src/velocity_kinematics_and_statics.rs:33`
+- **Location**: `src/velocity_kinematics_and_statics.rs:34`
 
 ## Project Structure
 

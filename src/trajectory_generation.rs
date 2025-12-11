@@ -5,11 +5,39 @@ use crate::{
     trans_to_rp,
 };
 
+/// Time scaling method for trajectory generation.
+///
+/// # Variants
+///
+/// * `Cubic` - Use cubic polynomial time scaling (zero start/end velocity)
+/// * `Quintic` - Use quintic polynomial time scaling (zero start/end velocity and acceleration)
 pub enum Method {
     Cubic,
     Quintic,
 }
 
+/// Computes s(t) for a cubic time scaling.
+///
+/// # Arguments
+///
+/// * `tf` - Total time of the motion in seconds from rest to rest
+/// * `t` - The current time t satisfying 0 < t < Tf
+///
+/// # Returns
+///
+/// The path parameter s(t) corresponding to a third-order polynomial motion
+/// that begins and ends at zero velocity
+///
+/// # Example
+///
+/// ```
+/// use modern_robotics::cubic_time_scaling;
+///
+/// let tf = 2.0;
+/// let t = 0.6;
+/// let s = cubic_time_scaling(tf, t);
+/// // s is approximately 0.216
+/// ```
 pub fn cubic_time_scaling(tf: f64, t: f64) -> f64 {
     let a0 = 0.0;
     let a1 = 0.0;
@@ -20,6 +48,28 @@ pub fn cubic_time_scaling(tf: f64, t: f64) -> f64 {
     return s;
 }
 
+/// Computes s(t) for a quintic time scaling.
+///
+/// # Arguments
+///
+/// * `tf` - Total time of the motion in seconds from rest to rest
+/// * `t` - The current time t satisfying 0 < t < Tf
+///
+/// # Returns
+///
+/// The path parameter s(t) corresponding to a fifth-order polynomial motion
+/// that begins and ends at zero velocity and zero acceleration
+///
+/// # Example
+///
+/// ```
+/// use modern_robotics::quintic_time_scaling;
+///
+/// let tf = 2.0;
+/// let t = 0.6;
+/// let s = quintic_time_scaling(tf, t);
+/// // s is approximately 0.16308
+/// ```
 pub fn quintic_time_scaling(tf: f64, t: f64) -> f64 {
     let a0 = 0.0;
     let a1 = 0.0;
@@ -32,6 +82,38 @@ pub fn quintic_time_scaling(tf: f64, t: f64) -> f64 {
     return s;
 }
 
+/// Computes a straight-line trajectory in joint space.
+///
+/// # Arguments
+///
+/// * `thetastart` - The initial joint variables
+/// * `thetaend` - The final joint variables
+/// * `tf` - Total time of the motion in seconds from rest to rest
+/// * `n` - The number of points N > 1 (Start and stop) in the discrete
+///   representation of the trajectory
+/// * `method` - The time-scaling method, where Method::Cubic uses a third-order
+///   polynomial and Method::Quintic uses a fifth-order polynomial
+///
+/// # Returns
+///
+/// A trajectory as a list of N points, where each point is a vector of joint
+/// coordinates. The first point is thetastart and the Nth point is thetaend.
+///
+/// This function is similar to the MATLAB/Octave function jtraj.
+///
+/// # Example
+///
+/// ```
+/// use nalgebra::DVector;
+/// use modern_robotics::{joint_trajectory, Method};
+///
+/// let thetastart = DVector::from_vec(vec![1.0, 0.0, 0.0, 1.0, 1.5, 2.5, 3.0, 0.0]);
+/// let thetaend = DVector::from_vec(vec![1.2, 0.5, 0.6, 1.1, 2.0, 3.1, 3.2, 0.9]);
+/// let tf = 4.0;
+/// let n = 6;
+/// let method = Method::Cubic;
+/// let traj = joint_trajectory(&thetastart, &thetaend, tf, n, method);
+/// ```
 pub fn joint_trajectory(
     thetastart: &nalgebra::DVector<f64>,
     thetaend: &nalgebra::DVector<f64>,
@@ -56,6 +138,49 @@ pub fn joint_trajectory(
     return traj;
 }
 
+/// Computes a trajectory as a list of N SE(3) matrices corresponding to the screw motion.
+///
+/// # Arguments
+///
+/// * `xstart` - The initial end-effector configuration
+/// * `xend` - The final end-effector configuration
+/// * `tf` - Total time of the motion in seconds from rest to rest
+/// * `n` - The number of points N > 1 (Start and stop) in the discrete
+///   representation of the trajectory
+/// * `method` - The time-scaling method, where Method::Cubic uses a third-order
+///   polynomial and Method::Quintic uses a fifth-order polynomial
+///
+/// # Returns
+///
+/// The discretized trajectory as a list of N matrices in SE(3) separated in
+/// time by Tf/(N-1). The first point is Xstart and the Nth point is Xend.
+///
+/// This function calculates a trajectory corresponding to the screw motion about
+/// a space screw axis.
+///
+/// # Example
+///
+/// ```
+/// use nalgebra::Matrix4;
+/// use modern_robotics::{screw_trajectory, Method};
+///
+/// let xstart = Matrix4::new(
+///     1.0, 0.0, 0.0, 1.0,
+///     0.0, 1.0, 0.0, 0.0,
+///     0.0, 0.0, 1.0, 1.0,
+///     0.0, 0.0, 0.0, 1.0
+/// );
+/// let xend = Matrix4::new(
+///     0.0, 0.0, 1.0, 0.1,
+///     1.0, 0.0, 0.0, 0.0,
+///     0.0, 1.0, 0.0, 4.1,
+///     0.0, 0.0, 0.0, 1.0
+/// );
+/// let tf = 5.0;
+/// let n = 4;
+/// let method = Method::Cubic;
+/// let traj = screw_trajectory(&xstart, &xend, tf, n, method);
+/// ```
 pub fn screw_trajectory(
     xstart: &nalgebra::Matrix4<f64>,
     xend: &nalgebra::Matrix4<f64>,
@@ -85,6 +210,50 @@ pub fn screw_trajectory(
     return traj;
 }
 
+/// Computes a trajectory as a list of N SE(3) matrices with Cartesian motion.
+///
+/// # Arguments
+///
+/// * `xstart` - The initial end-effector configuration
+/// * `xend` - The final end-effector configuration
+/// * `tf` - Total time of the motion in seconds from rest to rest
+/// * `n` - The number of points N > 1 (Start and stop) in the discrete
+///   representation of the trajectory
+/// * `method` - The time-scaling method, where Method::Cubic uses a third-order
+///   polynomial and Method::Quintic uses a fifth-order polynomial
+///
+/// # Returns
+///
+/// The discretized trajectory as a list of N matrices in SE(3) separated in
+/// time by Tf/(N-1). The first point is Xstart and the Nth point is Xend.
+///
+/// This function is similar to ScrewTrajectory, except the origin of the
+/// end-effector frame follows a straight line, decoupled from the rotational
+/// motion.
+///
+/// # Example
+///
+/// ```
+/// use nalgebra::Matrix4;
+/// use modern_robotics::{cartesian_trajectory, Method};
+///
+/// let xstart = Matrix4::new(
+///     1.0, 0.0, 0.0, 1.0,
+///     0.0, 1.0, 0.0, 0.0,
+///     0.0, 0.0, 1.0, 1.0,
+///     0.0, 0.0, 0.0, 1.0
+/// );
+/// let xend = Matrix4::new(
+///     0.0, 0.0, 1.0, 0.1,
+///     1.0, 0.0, 0.0, 0.0,
+///     0.0, 1.0, 0.0, 4.1,
+///     0.0, 0.0, 0.0, 1.0
+/// );
+/// let tf = 5.0;
+/// let n = 4;
+/// let method = Method::Quintic;
+/// let traj = cartesian_trajectory(&xstart, &xend, tf, n, method);
+/// ```
 pub fn cartesian_trajectory(
     xstart: &nalgebra::Matrix4<f64>,
     xend: &nalgebra::Matrix4<f64>,
